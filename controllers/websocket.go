@@ -38,6 +38,12 @@ func (this *WebSocketController) Join() {
 		return
 	}
 
+ 	room,err := this.GetInt("room");
+	if room <= 0 && err != nil {
+		http.Error(this.Ctx.ResponseWriter, "房间号错误", 400)
+		return
+	}
+
 	uname := this.GetString("uname")
 	if len(uname) == 0 {
 		this.Redirect("/", 302)
@@ -55,8 +61,8 @@ func (this *WebSocketController) Join() {
 	}
 
 	// Join chat room.
-	Join(uname, ws)
-	defer Leave(uname)
+	Join(uname, ws,room)
+	defer Leave(uname,room)
 
 	// Message receive loop.
 	for {
@@ -64,7 +70,7 @@ func (this *WebSocketController) Join() {
 		if err != nil {
 			return
 		}
-		publish <- newEvent(models.EVENT_MESSAGE, uname, string(p))
+		publish <- newEvent(models.EVENT_MESSAGE, uname, string(p),room)
 	}
 }
 
@@ -76,13 +82,13 @@ func broadcastWebSocket(event models.Event) {
 		return
 	}
 
-	for sub := subscribers.Front(); sub != nil; sub = sub.Next() {
+	for sub := subscribers[event.Room].Front(); sub != nil; sub = sub.Next() {
 		// Immediately send event to WebSocket users.
 		ws := sub.Value.(Subscriber).Conn
 		if ws != nil {
 			if ws.WriteMessage(websocket.TextMessage, data) != nil {
 				// User disconnected.
-				unsubscribe <- sub.Value.(Subscriber).Name
+				unsubscribe <- UnSubscriber{Name:sub.Value.(Subscriber).Name,Room:sub.Value.(Subscriber).Room}
 			}
 		}
 	}

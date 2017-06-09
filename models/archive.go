@@ -27,4 +27,5 @@ type Event struct {
 	User      string
 	Timestamp int // Unix timestamp (secs)
 	Content   string
+	Room      int
 }
