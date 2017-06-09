@@ -29,32 +29,38 @@ type Subscription struct {
 	New     <-chan models.Event // New events coming in.
 }
 
-func newEvent(ep models.EventType, user, msg string) models.Event {
-	return models.Event{ep, user, int(time.Now().Unix()), msg}
+func newEvent(ep models.EventType, user, msg string,room int) models.Event {
+	return models.Event{ep, user, int(time.Now().Unix()), msg,room}
 }
 
-func Join(user string, ws *websocket.Conn) {
-	subscribe <- Subscriber{Name: user, Conn: ws}
+func Join(user string, ws *websocket.Conn,room int) {
+	subscribe <- Subscriber{Name: user, Conn: ws,Room: room}
 }
 
-func Leave(user string) {
-	unsubscribe <- user
+func Leave(user string,room int) {
+	unsubscribe <- UnSubscriber{Name:user,Room:room}
 }
 
 type Subscriber struct {
 	Name string
 	Conn *websocket.Conn // Only for WebSocket users; otherwise nil.
+	Room int
+}
+
+type UnSubscriber struct {
+	Name string
+	Room int
 }
 
 var (
 	// Channel for new join users.
 	subscribe = make(chan Subscriber, 10)
 	// Channel for exit users.
-	unsubscribe = make(chan string, 10)
+	unsubscribe = make(chan UnSubscriber, 10)
 	// Send events here to publish them.
 	publish = make(chan models.Event, 10)
 
-	subscribers = list.New()
+	subscribers = make(map[int]*list.List)
 )
 
 // This function handles all incoming chan messages.
@@ -62,10 +68,10 @@ func chatroom() {
 	for {
 		select {
 		case sub := <-subscribe:
-			if !isUserExist(subscribers, sub.Name) {
-				subscribers.PushBack(sub) // Add user to the end of list.
+			if !isUserExist(subscribers, sub.Name,sub.Room) {
+				subscribers[sub.Room].PushBack(sub) // Add user to the end of list.
 				// Publish a JOIN event.
-				publish <- newEvent(models.EVENT_JOIN, sub.Name, "")
+				publish <- newEvent(models.EVENT_JOIN, sub.Name, "",sub.Room)
 				beego.Info("New user:", sub.Name, ";WebSocket:", sub.Conn != nil)
 			} else {
 				beego.Info("Old user:", sub.Name, ";WebSocket:", sub.Conn != nil)
@@ -77,16 +83,16 @@ func chatroom() {
 				beego.Info("Message from", event.User, ";Content:", event.Content)
 			}
 		case unsub := <-unsubscribe:
-			for sub := subscribers.Front(); sub != nil; sub = sub.Next() {
-				if sub.Value.(Subscriber).Name == unsub {
-					subscribers.Remove(sub)
+			for sub := subscribers[unsub.Room].Front(); sub != nil; sub = sub.Next() {
+				if sub.Value.(Subscriber).Name == unsub.Name {
+					subscribers[unsub.Room].Remove(sub)
 					// Clone connection.
 					ws := sub.Value.(Subscriber).Conn
 					if ws != nil {
 						ws.Close()
-						beego.Error("WebSocket closed:", unsub)
+						beego.Error("WebSocket closed:", unsub.Name)
 					}
-					publish <- newEvent(models.EVENT_LEAVE, unsub, "") // Publish a LEAVE event.
+					publish <- newEvent(models.EVENT_LEAVE, unsub.Name, "",unsub.Room) // Publish a LEAVE event.
 					break
 				}
 			}
@@ -98,11 +104,15 @@ func init() {
 	go chatroom()
 }
 
-func isUserExist(subscribers *list.List, user string) bool {
-	for sub := subscribers.Front(); sub != nil; sub = sub.Next() {
-		if sub.Value.(Subscriber).Name == user {
-			return true
+func isUserExist(subscribers map[int]*list.List, user string,room int) bool {
+	if subscribers[room] != nil {
+		for sub := subscribers[room].Front(); sub != nil; sub = sub.Next() {
+			if sub.Value.(Subscriber).Name == user {
+				return true
+			}
 		}
+	}else{
+		subscribers[room] = list.New()
 	}
 	return false
 }
