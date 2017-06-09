@@ -22,6 +22,7 @@ import (
 	"github.com/gorilla/websocket"
 
 	"chatroom/models"
+	"chatroom/library/jwt"
 )
 
 // WebSocketController handles WebSocket requests.
@@ -31,6 +32,12 @@ type WebSocketController struct {
 
 // Join method handles WebSocket requests for WebSocketController.
 func (this *WebSocketController) Join() {
+	_ ,err:= jwt.CheckToken(this.GetString("token"))
+	if err != nil {
+		http.Error(this.Ctx.ResponseWriter, err.Error(), 400)
+		return
+	}
+
 	uname := this.GetString("uname")
 	if len(uname) == 0 {
 		this.Redirect("/", 302)
