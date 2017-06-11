@@ -1,6 +1,6 @@
-# chatroot
+# chatroom
 
-chatroot is about using WebSocket to build a web-based chat room based on beego.
+chatroom is about using WebSocket to build a web-based chat room based on beego.
 
 ## Installation
 
