@@ -19,6 +19,6 @@ func CheckToken(tokenStr string) (*jwt.Token, error) {
 	})
 	if err != nil {
 		errorVar = fmt.Errorf("无效token")
-	}	
-	return token,errorVar
+	}
+	return token, errorVar
 }

@@ -21,8 +21,8 @@ import (
 	"github.com/astaxie/beego"
 	"github.com/gorilla/websocket"
 
-	"chatroom/models"
 	"chatroom/library/jwt"
+	"chatroom/models"
 )
 
 // WebSocketController handles WebSocket requests.
@@ -32,13 +32,13 @@ type WebSocketController struct {
 
 // Join method handles WebSocket requests for WebSocketController.
 func (this *WebSocketController) Join() {
-	_ ,err:= jwt.CheckToken(this.GetString("token"))
+	_, err := jwt.CheckToken(this.GetString("token"))
 	if err != nil {
 		http.Error(this.Ctx.ResponseWriter, err.Error(), 400)
 		return
 	}
 
- 	room,err := this.GetInt("room");
+	room, err := this.GetInt("room")
 	if room <= 0 && err != nil {
 		http.Error(this.Ctx.ResponseWriter, "房间号错误", 400)
 		return
@@ -53,10 +53,10 @@ func (this *WebSocketController) Join() {
 		beego.Error("Cannot setup WebSocket connection:", err)
 		return
 	}
-	clientId := NewClientId(room,ws.RemoteAddr().String())
+	clientId := NewClientId(room, ws.RemoteAddr().String())
 	// Join chat room.
-	Join(clientId, ws,room)
-	defer Leave(clientId,room)
+	Join(clientId, ws, room)
+	defer Leave(clientId, room)
 
 	// Message receive loop.
 	for {
@@ -64,7 +64,7 @@ func (this *WebSocketController) Join() {
 		if err != nil {
 			return
 		}
-		publish <- newEvent(models.EVENT_MESSAGE, clientId, string(p),room)
+		publish <- newEvent(models.EVENT_MESSAGE, clientId, string(p), room)
 	}
 }
 
@@ -82,7 +82,7 @@ func broadcastWebSocket(event models.Event) {
 		if ws != nil {
 			if ws.WriteMessage(websocket.TextMessage, data) != nil {
 				// User disconnected.
-				unsubscribe <- UnSubscriber{Name:sub.Value.(Subscriber).Name,Room:sub.Value.(Subscriber).Room}
+				unsubscribe <- UnSubscriber{Name: sub.Value.(Subscriber).Name, Room: sub.Value.(Subscriber).Room}
 			}
 		}
 	}
