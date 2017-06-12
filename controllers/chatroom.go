@@ -44,13 +44,13 @@ func NewClientId(room int, RemoteAddr string) string {
 
 type Subscriber struct {
 	ClientId string
-	Conn     *websocket.Conn // Only for WebSocket users; otherwise nil.
-	Room     int
+	Conn *websocket.Conn // Only for WebSocket users; otherwise nil.
+	Room int
 }
 
 type UnSubscriber struct {
 	ClientId string
-	Room     int
+	Room int
 }
 
 var (
@@ -93,7 +93,6 @@ func chatroom() {
 						ws.Close()
 						beego.Error("WebSocket closed:", unsub.ClientId)
 					}
-					publish <- newEvent(models.EVENT_LEAVE, unsub.ClientId, "", unsub.Room) // Publish a LEAVE event.
 					break
 				}
 			}
