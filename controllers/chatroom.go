@@ -26,11 +26,6 @@ import (
 	"chatroom/models"
 )
 
-type Subscription struct {
-	Archive []models.Event      // All the events from the archive.
-	New     <-chan models.Event // New events coming in.
-}
-
 func newEvent(ep models.EventType, user, msg string, room int) models.Event {
 	return models.Event{ep, user, int(time.Now().Unix()), msg, room}
 }
@@ -49,13 +44,13 @@ func NewClientId(room int, RemoteAddr string) string {
 
 type Subscriber struct {
 	ClientId string
-	Conn *websocket.Conn // Only for WebSocket users; otherwise nil.
-	Room int
+	Conn     *websocket.Conn // Only for WebSocket users; otherwise nil.
+	Room     int
 }
 
 type UnSubscriber struct {
 	ClientId string
-	Room int
+	Room     int
 }
 
 var (
