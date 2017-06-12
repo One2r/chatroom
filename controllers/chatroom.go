@@ -44,13 +44,13 @@ func NewClientId(room int, RemoteAddr string) string {
 
 type Subscriber struct {
 	ClientId string
-	Conn *websocket.Conn // Only for WebSocket users; otherwise nil.
-	Room int
+	Conn     *websocket.Conn // Only for WebSocket users; otherwise nil.
+	Room     int
 }
 
 type UnSubscriber struct {
 	ClientId string
-	Room int
+	Room     int
 }
 
 var (
@@ -74,8 +74,6 @@ func chatroom() {
 				// Publish a JOIN event.
 				publish <- newEvent(models.EVENT_JOIN, sub.ClientId, "", sub.Room)
 				beego.Info("New user:", sub.ClientId, ";WebSocket:", sub.Conn != nil)
-			} else {
-				beego.Info("Old user:", sub.ClientId, ";WebSocket:", sub.Conn != nil)
 			}
 		case event := <-publish:
 			broadcastWebSocket(event)
