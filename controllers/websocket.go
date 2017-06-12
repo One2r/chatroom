@@ -80,9 +80,21 @@ func broadcastWebSocket(event models.Event) {
 		// Immediately send event to WebSocket users.
 		ws := sub.Value.(Subscriber).Conn
 		if ws != nil {
-			if ws.WriteMessage(websocket.TextMessage, data) != nil {
-				// User disconnected.
-				unsubscribe <- UnSubscriber{ClientId: sub.Value.(Subscriber).ClientId, Room: sub.Value.(Subscriber).Room}
+			switch event.Type {
+			case models.EVENT_JOIN: //EVENT_JOIN事件消息只发送给当前连接
+				if event.ClientId == sub.Value.(Subscriber).ClientId {
+					if ws.WriteMessage(websocket.TextMessage, data) != nil {
+						// User disconnected.
+						unsubscribe <- UnSubscriber{ClientId: sub.Value.(Subscriber).ClientId, Room: sub.Value.(Subscriber).Room}
+					}
+				}
+				break
+			default:
+				if ws.WriteMessage(websocket.TextMessage, data) != nil {
+					// User disconnected.
+					unsubscribe <- UnSubscriber{ClientId: sub.Value.(Subscriber).ClientId, Room: sub.Value.(Subscriber).Room}
+				}
+				break
 			}
 		}
 	}
