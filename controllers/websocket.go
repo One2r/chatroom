@@ -82,7 +82,7 @@ func broadcastWebSocket(event models.Event) {
 		if ws != nil {
 			if ws.WriteMessage(websocket.TextMessage, data) != nil {
 				// User disconnected.
-				unsubscribe <- UnSubscriber{Name: sub.Value.(Subscriber).Name, Room: sub.Value.(Subscriber).Room}
+				unsubscribe <- UnSubscriber{ClientId: sub.Value.(Subscriber).ClientId, Room: sub.Value.(Subscriber).Room}
 			}
 		}
 	}

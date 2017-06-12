@@ -24,7 +24,7 @@ const (
 
 type Event struct {
 	Type      EventType // JOIN, LEAVE, MESSAGE
-	User      string
+	ClientId      string
 	Timestamp int // Unix timestamp (secs)
 	Content   string
 	Room      int
