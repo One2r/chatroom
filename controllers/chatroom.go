@@ -17,6 +17,8 @@ package controllers
 import (
 	"container/list"
 	"time"
+	"strconv"
+	"encoding/hex"
 
 	"github.com/astaxie/beego"
 	"github.com/gorilla/websocket"
@@ -39,6 +41,10 @@ func Join(user string, ws *websocket.Conn,room int) {
 
 func Leave(user string,room int) {
 	unsubscribe <- UnSubscriber{Name:user,Room:room}
+}
+
+func NewClientId(room int,RemoteAddr string) string {
+	return "h_l_" + strconv.Itoa(room) + "_" + hex.EncodeToString([]byte(RemoteAddr))
 }
 
 type Subscriber struct {

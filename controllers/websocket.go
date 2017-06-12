@@ -44,12 +44,6 @@ func (this *WebSocketController) Join() {
 		return
 	}
 
-	uname := this.GetString("uname")
-	if len(uname) == 0 {
-		this.Redirect("/", 302)
-		return
-	}
-
 	// Upgrade from http request to WebSocket.
 	ws, err := websocket.Upgrade(this.Ctx.ResponseWriter, this.Ctx.Request, nil, 1024, 1024)
 	if _, ok := err.(websocket.HandshakeError); ok {
@@ -59,10 +53,10 @@ func (this *WebSocketController) Join() {
 		beego.Error("Cannot setup WebSocket connection:", err)
 		return
 	}
-
+	clientId := NewClientId(room,ws.RemoteAddr().String())
 	// Join chat room.
-	Join(uname, ws,room)
-	defer Leave(uname,room)
+	Join(clientId, ws,room)
+	defer Leave(clientId,room)
 
 	// Message receive loop.
 	for {
@@ -70,7 +64,7 @@ func (this *WebSocketController) Join() {
 		if err != nil {
 			return
 		}
-		publish <- newEvent(models.EVENT_MESSAGE, uname, string(p),room)
+		publish <- newEvent(models.EVENT_MESSAGE, clientId, string(p),room)
 	}
 }
 
