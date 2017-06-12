@@ -55,11 +55,11 @@ type UnSubscriber struct {
 
 var (
 	// Channel for new join users.
-	subscribe = make(chan Subscriber, 10)
+	subscribe = make(chan Subscriber, 50)
 	// Channel for exit users.
-	unsubscribe = make(chan UnSubscriber, 10)
+	unsubscribe = make(chan UnSubscriber, 50)
 	// Send events here to publish them.
-	publish = make(chan models.Event, 10)
+	publish = make(chan models.Event, 100)
 
 	subscribers = make(map[int]*list.List)
 )
