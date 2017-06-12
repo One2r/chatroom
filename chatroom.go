@@ -27,7 +27,7 @@ const (
 func main() {
 	beego.Info(beego.BConfig.AppName, APP_VER)
 
-	beego.Router("/ws/join", &controllers.WebSocketController{}, "get:Join")
+	beego.Router("/join", &controllers.WebSocketController{}, "get:Join")
 
 	beego.Run()
 }
