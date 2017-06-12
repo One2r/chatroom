@@ -74,7 +74,7 @@ func chatroom() {
 	for {
 		select {
 		case sub := <-subscribe:
-			if !isUserExist(subscribers, sub.Name,sub.Room) {
+			if isRoomExist(subscribers,sub.Room) {
 				subscribers[sub.Room].PushBack(sub) // Add user to the end of list.
 				// Publish a JOIN event.
 				publish <- newEvent(models.EVENT_JOIN, sub.Name, "",sub.Room)
@@ -110,15 +110,10 @@ func init() {
 	go chatroom()
 }
 
-func isUserExist(subscribers map[int]*list.List, user string,room int) bool {
-	if subscribers[room] != nil {
-		for sub := subscribers[room].Front(); sub != nil; sub = sub.Next() {
-			if sub.Value.(Subscriber).Name == user {
-				return true
-			}
-		}
-	}else{
+//检查房间是否存在
+func isRoomExist(subscribers map[int]*list.List, room int) bool {
+	if subscribers[room] == nil {
 		subscribers[room] = list.New()
 	}
-	return false
+	return true
 }
