@@ -16,9 +16,9 @@ package controllers
 
 import (
 	"container/list"
-	"time"
-	"strconv"
 	"encoding/hex"
+	"strconv"
+	"time"
 
 	"github.com/astaxie/beego"
 	"github.com/gorilla/websocket"
@@ -31,19 +31,19 @@ type Subscription struct {
 	New     <-chan models.Event // New events coming in.
 }
 
-func newEvent(ep models.EventType, user, msg string,room int) models.Event {
-	return models.Event{ep, user, int(time.Now().Unix()), msg,room}
+func newEvent(ep models.EventType, user, msg string, room int) models.Event {
+	return models.Event{ep, user, int(time.Now().Unix()), msg, room}
 }
 
-func Join(user string, ws *websocket.Conn,room int) {
-	subscribe <- Subscriber{Name: user, Conn: ws,Room: room}
+func Join(user string, ws *websocket.Conn, room int) {
+	subscribe <- Subscriber{Name: user, Conn: ws, Room: room}
 }
 
-func Leave(user string,room int) {
-	unsubscribe <- UnSubscriber{Name:user,Room:room}
+func Leave(user string, room int) {
+	unsubscribe <- UnSubscriber{Name: user, Room: room}
 }
 
-func NewClientId(room int,RemoteAddr string) string {
+func NewClientId(room int, RemoteAddr string) string {
 	return "h_l_" + strconv.Itoa(room) + "_" + hex.EncodeToString([]byte(RemoteAddr))
 }
 
@@ -74,10 +74,10 @@ func chatroom() {
 	for {
 		select {
 		case sub := <-subscribe:
-			if isRoomExist(subscribers,sub.Room) {
+			if isRoomExist(subscribers, sub.Room) {
 				subscribers[sub.Room].PushBack(sub) // Add user to the end of list.
 				// Publish a JOIN event.
-				publish <- newEvent(models.EVENT_JOIN, sub.Name, "",sub.Room)
+				publish <- newEvent(models.EVENT_JOIN, sub.Name, "", sub.Room)
 				beego.Info("New user:", sub.Name, ";WebSocket:", sub.Conn != nil)
 			} else {
 				beego.Info("Old user:", sub.Name, ";WebSocket:", sub.Conn != nil)
@@ -98,7 +98,7 @@ func chatroom() {
 						ws.Close()
 						beego.Error("WebSocket closed:", unsub.Name)
 					}
-					publish <- newEvent(models.EVENT_LEAVE, unsub.Name, "",unsub.Room) // Publish a LEAVE event.
+					publish <- newEvent(models.EVENT_LEAVE, unsub.Name, "", unsub.Room) // Publish a LEAVE event.
 					break
 				}
 			}
