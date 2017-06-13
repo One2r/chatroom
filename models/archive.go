@@ -20,6 +20,7 @@ const (
 	EVENT_JOIN = iota
 	EVENT_LEAVE
 	EVENT_MESSAGE
+	EVENT_BIZ_EXCEPTION
 )
 
 type Event struct {
