@@ -67,7 +67,7 @@ func (this *WebSocketController) Join() {
 		}
 		msg := string(p)
 		if badwords.HasBadWord(msg) {
-			publish <- newEvent(models.EVENT_BIZ_EXCEPTION, clientId, "含有被屏蔽的关键词", room)
+			publish <- newEvent(models.EVENT_BIZ_EXCEPTION, clientId, "您的发言含有被屏蔽的关键词", room)
 		} else {
 			publish <- newEvent(models.EVENT_MESSAGE, clientId, msg, room)
 		}
