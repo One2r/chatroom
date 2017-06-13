@@ -21,6 +21,7 @@ import (
 	"github.com/astaxie/beego"
 	"github.com/gorilla/websocket"
 
+	"chatroom/library/badwords"
 	"chatroom/library/jwt"
 	"chatroom/models"
 )
@@ -64,7 +65,12 @@ func (this *WebSocketController) Join() {
 		if err != nil {
 			return
 		}
-		publish <- newEvent(models.EVENT_MESSAGE, clientId, string(p), room)
+		msg := string(p)
+		if badwords.HasBadWord(msg) {
+			publish <- newEvent(models.EVENT_BIZ_EXCEPTION, clientId, "含有被屏蔽的关键词", room)
+		} else {
+			publish <- newEvent(models.EVENT_MESSAGE, clientId, msg, room)
+		}
 	}
 }
 
@@ -81,7 +87,7 @@ func broadcastWebSocket(event models.Event) {
 		ws := sub.Value.(Subscriber).Conn
 		if ws != nil {
 			switch event.Type {
-			case models.EVENT_JOIN: //EVENT_JOIN事件消息只发送给当前连接
+			case models.EVENT_JOIN, models.EVENT_BIZ_EXCEPTION: //EVENT_JOIN EVENT_BIZ_EXCEPTION事件消息只发送给当前连接
 				if event.ClientId == sub.Value.(Subscriber).ClientId {
 					if ws.WriteMessage(websocket.TextMessage, data) != nil {
 						// User disconnected.
