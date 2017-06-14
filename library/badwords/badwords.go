@@ -14,6 +14,22 @@ import (
 var m *ahocorasick.Matcher
 
 func init() {
+	badword := ReadDict()
+	m = ahocorasick.NewStringMatcher(badword)
+}
+
+//字符串content是否含有敏感关键词
+func HasBadWord(content string) bool {
+	hits := m.Match([]byte(content))
+	if len(hits) > 0 {
+		return true
+	} else {
+		return false
+	}
+}
+
+//读取敏感关键词词典
+func ReadDict() []string {
 	var badword []string
 	f, err := os.Open(filepath.Join(beego.AppPath, "conf", beego.AppConfig.String("badword_dict")))
 	defer f.Close()
@@ -28,14 +44,14 @@ func init() {
 			badword = append(badword,line)
 		}
 	}
-	m = ahocorasick.NewStringMatcher(badword)
+	return badword
 }
 
-func HasBadWord(content string) bool {
-	hits := m.Match([]byte(content))
-	if len(hits) > 0 {
-		return true
-	} else {
-		return false
+//更新敏感关键词
+func UpdateBadword() bool {
+	badword := ReadDict()
+	if len(badword) > 0 {
+		m = ahocorasick.NewStringMatcher(badword)
 	}
+	return true
 }
