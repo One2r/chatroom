@@ -47,8 +47,8 @@ func Replace(content string) string {
 	if m != nil {
 		hits := m.Match([]byte(content))
 		if len(hits) > 0 {
-			for _, k := range hits {
-				content = strings.Replace(content, replace[k], replaceMap[replace[k]], 1)
+			for _, v := range hits {
+				content = strings.Replace(content, replace[v], replaceMap[replace[v]], 1)
 			}
 		}
 	}
