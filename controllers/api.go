@@ -3,7 +3,7 @@ package controllers
 import (
 	"github.com/astaxie/beego"
 
-	"chatroom/library/badwords"
+	"chatroom/library/filters/sensitive"
 )
 
 type ApiController struct {
@@ -11,8 +11,8 @@ type ApiController struct {
 }
 
 //刷新敏感词
-func (this *ApiController) UpdateBadword() {
-	result := badwords.UpdateBadword()
+func (this *ApiController) UpdateSensitiveWords() {
+	result := sensitive.UpdateSensitiveWords()
 	this.Data["json"] = result
     this.ServeJSON()
 }

@@ -21,7 +21,7 @@ import (
 	"github.com/astaxie/beego"
 	"github.com/gorilla/websocket"
 
-	"chatroom/library/badwords"
+	"chatroom/library/filters/sensitive"
 	"chatroom/library/jwt"
 	"chatroom/models"
 )
@@ -66,7 +66,7 @@ func (this *WebSocketController) Join() {
 			return
 		}
 		msg := string(p)
-		if badwords.HasBadWord(msg) {
+		if sensitive.HasSensitiveWords(msg) {
 			publish <- newEvent(models.EVENT_BIZ_EXCEPTION, clientId, "您的发言含有被屏蔽的关键词", room)
 		} else {
 			publish <- newEvent(models.EVENT_MESSAGE, clientId, msg, room)

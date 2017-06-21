@@ -11,5 +11,5 @@ func init() {
     beego.Router("/", &controllers.WebSocketController{}, "get:Join")
 
 	//api路由
-	beego.Router("/api/badword/update", &controllers.ApiController{}, "get:UpdateBadword")
+	beego.Router("/api/sensitive/update", &controllers.ApiController{}, "get:UpdateSensitiveWords")
 }
