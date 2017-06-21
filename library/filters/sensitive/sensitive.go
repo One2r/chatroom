@@ -11,21 +11,24 @@ import (
 	"github.com/One2r/ahocorasick"
 )
 
+//是否开启敏感词检测功能
+var Enable bool = true
+
 var m *ahocorasick.Matcher
 
 func init() {
-	sensitiveWords := ReadDict()
-	m = ahocorasick.NewStringMatcher(sensitiveWords)
+	UpdateSensitiveWords()
 }
 
 //字符串content是否含有敏感关键词
 func HasSensitiveWords(content string) bool {
-	hits := m.Match([]byte(content))
-	if len(hits) > 0 {
-		return true
-	} else {
-		return false
+	if m != nil {
+		hits := m.Match([]byte(content))
+		if len(hits) > 0 {
+			return true
+		}
 	}
+	return false
 }
 
 //读取敏感关键词词典
@@ -52,6 +55,8 @@ func UpdateSensitiveWords() bool {
 	sensitiveWords := ReadDict()
 	if len(sensitiveWords) > 0 {
 		m = ahocorasick.NewStringMatcher(sensitiveWords)
+		return true
+	}else{
+		return false
 	}
-	return true
 }
