@@ -1,4 +1,4 @@
-package badwords
+package sensitive
 
 import (
 	"os"
@@ -14,12 +14,12 @@ import (
 var m *ahocorasick.Matcher
 
 func init() {
-	badword := ReadDict()
-	m = ahocorasick.NewStringMatcher(badword)
+	sensitiveWords := ReadDict()
+	m = ahocorasick.NewStringMatcher(sensitiveWords)
 }
 
 //字符串content是否含有敏感关键词
-func HasBadWord(content string) bool {
+func HasSensitiveWords(content string) bool {
 	hits := m.Match([]byte(content))
 	if len(hits) > 0 {
 		return true
@@ -30,8 +30,8 @@ func HasBadWord(content string) bool {
 
 //读取敏感关键词词典
 func ReadDict() []string {
-	var badword []string
-	f, err := os.Open(filepath.Join(beego.AppPath, "conf", beego.AppConfig.String("badword_dict")))
+	var sensitiveWords []string
+	f, err := os.Open(filepath.Join(beego.AppPath, "conf", beego.AppConfig.String("sensitive_words_dict")))
 	defer f.Close()
 	if nil == err {
 		buff := bufio.NewReader(f)
@@ -41,17 +41,17 @@ func ReadDict() []string {
 				break
 			}
 			line = strings.TrimSpace(line)  
-			badword = append(badword,line)
+			sensitiveWords = append(sensitiveWords,line)
 		}
 	}
-	return badword
+	return sensitiveWords
 }
 
 //更新敏感关键词
-func UpdateBadword() bool {
-	badword := ReadDict()
-	if len(badword) > 0 {
-		m = ahocorasick.NewStringMatcher(badword)
+func UpdateSensitiveWords() bool {
+	sensitiveWords := ReadDict()
+	if len(sensitiveWords) > 0 {
+		m = ahocorasick.NewStringMatcher(sensitiveWords)
 	}
 	return true
 }
