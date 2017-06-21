@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 
 	"github.com/astaxie/beego"
-	"github.com/cloudflare/ahocorasick"
+	"github.com/One2r/ahocorasick"
 )
 
 var m *ahocorasick.Matcher
