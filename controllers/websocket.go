@@ -22,6 +22,7 @@ import (
 	"github.com/gorilla/websocket"
 
 	"chatroom/library/filters/sensitive"
+	"chatroom/library/filters/replace"
 	"chatroom/library/jwt"
 	"chatroom/models"
 )
@@ -66,11 +67,17 @@ func (this *WebSocketController) Join() {
 			return
 		}
 		msg := string(p)
-		if sensitive.HasSensitiveWords(msg) {
+		
+		if sensitive.Enable && sensitive.HasSensitiveWords(msg) {
 			publish <- newEvent(models.EVENT_BIZ_EXCEPTION, clientId, "您的发言含有被屏蔽的关键词", room)
-		} else {
-			publish <- newEvent(models.EVENT_MESSAGE, clientId, msg, room)
+			continue
 		}
+		
+		if replace.Enable {
+			msg = replace.Replace(msg)
+		}
+
+		publish <- newEvent(models.EVENT_MESSAGE, clientId, msg, room)
 	}
 }
 
