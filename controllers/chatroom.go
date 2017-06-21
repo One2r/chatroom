@@ -112,13 +112,13 @@ func isRoomExist(subscribers map[int]*list.List, room int) bool {
 }
 
 func cleanEmptyRoom() {
-	cleanTime := time.NewTicker( 60 * 60 * time.Second)
+	cleanTime := time.NewTicker(60 * 60 * time.Second)
 	for {
 		select {
 		case <-cleanTime.C:
-			for k,v := range subscribers {
-				if v.Len() ==  0 {
-					delete(subscribers,k)
+			for k, v := range subscribers {
+				if v.Len() == 0 {
+					delete(subscribers, k)
 				}
 			}
 		}

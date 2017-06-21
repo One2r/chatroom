@@ -1,14 +1,14 @@
 package replace
 
 import (
-	"os"
 	"bufio"
 	"io"
-	"strings"
+	"os"
 	"path/filepath"
+	"strings"
 
-	"github.com/astaxie/beego"
 	"github.com/One2r/ahocorasick"
+	"github.com/astaxie/beego"
 )
 
 //是否开启替换词功能
@@ -58,13 +58,13 @@ func Replace(content string) string {
 func UpdateReplaceWords() bool {
 	replaceMap = ReadDict()
 	if len(replaceMap) > 0 {
-		for k,_ := range replaceMap {
-			replace =  append(replace,k)
+		for k, _ := range replaceMap {
+			replace = append(replace, k)
 		}
 		m = ahocorasick.NewStringMatcher(replace)
 		m.GreedyMatch = true
 		return true
-	}else{
+	} else {
 		return false
 	}
 }
