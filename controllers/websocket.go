@@ -21,8 +21,8 @@ import (
 	"github.com/astaxie/beego"
 	"github.com/gorilla/websocket"
 
-	"chatroom/library/filters/sensitive"
 	"chatroom/library/filters/replace"
+	"chatroom/library/filters/sensitive"
 	"chatroom/library/jwt"
 	"chatroom/models"
 )
@@ -67,12 +67,12 @@ func (this *WebSocketController) Join() {
 			return
 		}
 		msg := string(p)
-		
+
 		if sensitive.Enable && sensitive.HasSensitiveWords(msg) {
 			publish <- newEvent(models.EVENT_BIZ_EXCEPTION, clientId, "您的发言含有被屏蔽的关键词", room)
 			continue
 		}
-		
+
 		if replace.Enable {
 			msg = replace.Replace(msg)
 		}

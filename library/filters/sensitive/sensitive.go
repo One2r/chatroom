@@ -1,14 +1,14 @@
 package sensitive
 
 import (
-	"os"
 	"bufio"
 	"io"
-	"strings"
+	"os"
 	"path/filepath"
+	"strings"
 
-	"github.com/astaxie/beego"
 	"github.com/One2r/ahocorasick"
+	"github.com/astaxie/beego"
 )
 
 //是否开启敏感词检测功能
@@ -43,8 +43,8 @@ func ReadDict() []string {
 			if err != nil || io.EOF == err {
 				break
 			}
-			line = strings.TrimSpace(line)  
-			sensitiveWords = append(sensitiveWords,line)
+			line = strings.TrimSpace(line)
+			sensitiveWords = append(sensitiveWords, line)
 		}
 	}
 	return sensitiveWords
@@ -56,7 +56,7 @@ func UpdateSensitiveWords() bool {
 	if len(sensitiveWords) > 0 {
 		m = ahocorasick.NewStringMatcher(sensitiveWords)
 		return true
-	}else{
+	} else {
 		return false
 	}
 }

@@ -14,5 +14,5 @@ type ApiController struct {
 func (this *ApiController) UpdateSensitiveWords() {
 	result := sensitive.UpdateSensitiveWords()
 	this.Data["json"] = result
-    this.ServeJSON()
+	this.ServeJSON()
 }
