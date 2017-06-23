@@ -21,9 +21,9 @@ import (
 	"github.com/astaxie/beego"
 	"github.com/gorilla/websocket"
 
+	"chatroom/library/auth"
 	"chatroom/library/filters/replace"
 	"chatroom/library/filters/sensitive"
-	"chatroom/library/jwt"
 	"chatroom/models"
 )
 
@@ -34,7 +34,7 @@ type WebSocketController struct {
 
 // Join method handles WebSocket requests for WebSocketController.
 func (this *WebSocketController) Join() {
-	_, err := jwt.CheckToken(this.GetString("token"))
+	user, err := auth.CheckToken(this.GetString("token"))
 	if err != nil {
 		http.Error(this.Ctx.ResponseWriter, err.Error(), 400)
 		return
@@ -68,12 +68,22 @@ func (this *WebSocketController) Join() {
 		}
 		msg := string(p)
 
-		if sensitive.Enable && sensitive.HasSensitiveWords(msg) {
+		if roomconf[room].Silence { //全员禁言中
+			publish <- newEvent(models.EVENT_BIZ_EXCEPTION, clientId, "管理员开启了全员禁言", room)
+			continue
+		}
+
+		if _, ok := roomconf[room].SpeakNotAllowed[user.UserID]; ok { //个人被禁言
+			publish <- newEvent(models.EVENT_BIZ_EXCEPTION, clientId, "您被管理员禁言了", room)
+			continue
+		}
+
+		if sensitive.Enable && sensitive.HasSensitiveWords(msg) { //敏感词信息屏蔽
 			publish <- newEvent(models.EVENT_BIZ_EXCEPTION, clientId, "您的发言含有被屏蔽的关键词", room)
 			continue
 		}
 
-		if replace.Enable {
+		if replace.Enable { //内容替换
 			msg = replace.Replace(msg)
 		}
 
