@@ -1,10 +1,10 @@
-package jwt
+package auth
 
 import (
 	"fmt"
 
 	"github.com/astaxie/beego"
-	"github.com/dgrijalva/jwt-go"
+	jwt "github.com/dgrijalva/jwt-go"
 )
 
 //验证token
