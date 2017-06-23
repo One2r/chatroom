@@ -30,3 +30,16 @@ type Event struct {
 	Content   string
 	Room      int
 }
+
+//RoomConf 聊天室配置
+type RoomConf struct {
+	MaxOnline       int              //最大在线人数
+	Silence         bool             //(除管理员)全员禁言
+	SpeakNotAllowed map[float64]bool //被禁言人员
+}
+
+//User 用户信息
+type User struct {
+	UserID   float64
+	UserType string
+}

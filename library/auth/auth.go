@@ -5,11 +5,14 @@ import (
 
 	"github.com/astaxie/beego"
 	jwt "github.com/dgrijalva/jwt-go"
+
+	"chatroom/models"
 )
 
 //验证token
-func CheckToken(tokenStr string) (*jwt.Token, error) {
+func CheckToken(tokenStr string) (*models.User, error) {
 	var errorVar error
+	user := &models.User{}
 
 	if len(tokenStr) == 0 {
 		errorVar = fmt.Errorf("请输入token")
@@ -20,5 +23,10 @@ func CheckToken(tokenStr string) (*jwt.Token, error) {
 	if err != nil {
 		errorVar = fmt.Errorf("无效token")
 	}
-	return token, errorVar
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if !ok {
+		errorVar = fmt.Errorf("获取用户数据失败")
+	}
+	user.UserID = claims["sub"].(map[string]interface{})["uid"].(float64)
+	return user, errorVar
 }
