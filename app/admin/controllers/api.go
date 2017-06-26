@@ -6,12 +6,12 @@ import (
 	"chatroom/library/filters/sensitive"
 )
 
-type ApiController struct {
+type AdminController struct {
 	beego.Controller
 }
 
 //刷新敏感词
-func (this *ApiController) UpdateSensitiveWords() {
+func (this *AdminController) UpdateSensitiveWords() {
 	result := sensitive.UpdateSensitiveWords()
 	this.Data["json"] = result
 	this.ServeJSON()
