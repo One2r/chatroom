@@ -3,13 +3,17 @@ package routers
 import (
 	"github.com/astaxie/beego"
 
-	"chatroom/controllers"
+	admin "chatroom/app/admin/controllers"
+	chat "chatroom/app/chat/controllers"
 )
 
 func init() {
 	//默认路由为websocket连接地址
-	beego.Router("/", &controllers.WebSocketController{}, "get:Join")
+	beego.Router("/", &chat.WebSocketController{}, "get:Join")
 
-	//api路由
-	beego.Router("/api/sensitive/update", &controllers.ApiController{}, "get:UpdateSensitiveWords")
+	//chatroom后台管理接口路由
+	ns := beego.NewNamespace("/admin",
+		beego.NSRouter("/sensitive/update", &admin.AdminController{}, "get:UpdateSensitiveWords"),
+	)
+	beego.AddNamespace(ns)
 }
