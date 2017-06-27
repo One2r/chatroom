@@ -55,9 +55,11 @@ func Replace(content string) string {
 	return content
 }
 
+//UpdateReplaceWords 更新替换词
 func UpdateReplaceWords() bool {
 	replaceMap = ReadDict()
 	if len(replaceMap) > 0 {
+		replace = nil
 		for k, _ := range replaceMap {
 			replace = append(replace, k)
 		}
