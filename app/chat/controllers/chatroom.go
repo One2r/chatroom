@@ -61,10 +61,6 @@ var (
 	unsubscribe = make(chan UnSubscriber, 50)
 	// Send events here to publish them.
 	publish = make(chan models.Event, 100)
-
-	subscribers = make(map[int]*list.List)
-
-	roomconf = make(map[int]*models.RoomConf)
 )
 
 var rwmutex *sync.RWMutex
@@ -74,8 +70,8 @@ func chatroom() {
 	for {
 		select {
 		case sub := <-subscribe:
-			if isRoomExist(subscribers, sub.Room) {
-				subscribers[sub.Room].PushBack(sub) // Add user to the end of list.
+			if isRoomExist(models.Subscribers, sub.Room) {
+				models.Subscribers[sub.Room].PushBack(sub) // Add user to the end of list.
 				// Publish a JOIN event.
 				publish <- newEvent(models.EVENT_JOIN, sub.ClientId, "", sub.Room)
 
@@ -89,9 +85,9 @@ func chatroom() {
 				beego.Info("Message from", event.ClientId, ";Content:", event.Content)
 			}
 		case unsub := <-unsubscribe:
-			for sub := subscribers[unsub.Room].Front(); sub != nil; sub = sub.Next() {
+			for sub := models.Subscribers[unsub.Room].Front(); sub != nil; sub = sub.Next() {
 				if sub.Value.(Subscriber).ClientId == unsub.ClientId {
-					subscribers[unsub.Room].Remove(sub)
+					models.Subscribers[unsub.Room].Remove(sub)
 					// Clone connection.
 					ws := sub.Value.(Subscriber).Conn
 					if ws != nil {
@@ -115,7 +111,7 @@ func init() {
 func isRoomExist(subscribers map[int]*list.List, room int) bool {
 	if subscribers[room] == nil {
 		subscribers[room] = list.New()
-		roomconf[room] = &models.RoomConf{MaxOnline: 0, Silence: false}
+		models.Roomconf[room] = &models.RoomConf{MaxOnline: 0, Silence: false}
 	}
 	return true
 }
@@ -126,10 +122,10 @@ func cleanEmptyRoom() {
 	for {
 		select {
 		case <-cleanTime.C:
-			for k, v := range subscribers {
+			for k, v := range models.Subscribers {
 				if v.Len() == 0 {
-					delete(subscribers, k)
-					delete(roomconf, k)
+					delete(models.Subscribers, k)
+					delete(models.Roomconf, k)
 				}
 			}
 		}
@@ -139,9 +135,9 @@ func cleanEmptyRoom() {
 //更新聊天室最大在线人数
 func setRoomMaxOnline(room int) {
 	rwmutex.Lock()
-	roomNum := subscribers[room].Len()
-	if roomNum > roomconf[room].MaxOnline {
-		roomconf[room].MaxOnline = roomNum
+	roomNum := models.Subscribers[room].Len()
+	if roomNum > models.Roomconf[room].MaxOnline {
+		models.Roomconf[room].MaxOnline = roomNum
 	}
 	rwmutex.Unlock()
 }
