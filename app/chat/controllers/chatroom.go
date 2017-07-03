@@ -111,7 +111,7 @@ func init() {
 func isRoomExist(subscribers map[int]*list.List, room int) bool {
 	if subscribers[room] == nil {
 		subscribers[room] = list.New()
-		models.Roomconf[room] = &models.RoomConf{MaxOnline: 0, Silence: false}
+		models.Roomconf[room] = &models.RoomConf{MaxOnline: 0, Silence: false, SpeakNotAllowed: make(map[int]bool)}
 	}
 	return true
 }
