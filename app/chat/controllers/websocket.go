@@ -73,7 +73,7 @@ func (this *WebSocketController) Join() {
 			continue
 		}
 
-		if _, ok := models.Roomconf[room].SpeakNotAllowed[user.UserID]; ok { //个人被禁言
+		if uSpeakNotAllowed, ok := models.Roomconf[room].SpeakNotAllowed[int(user.UserID)]; ok && uSpeakNotAllowed { //个人被禁言
 			publish <- newEvent(models.EVENT_BIZ_EXCEPTION, clientId, "您被管理员禁言了", room)
 			continue
 		}

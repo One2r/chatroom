@@ -13,7 +13,19 @@ func SetRoomSilence(room int, status string) bool {
 			roomconf.Silence = false
 		}
 		return true
-	} else {
-		return false
 	}
+	return false
+}
+
+//SpeakNotAllowed 禁言某个房间的某个人
+func SpeakNotAllowed(room int, uid int, status string) bool {
+	if roomconf, ok := models.Roomconf[room]; ok {
+		if status == "true" {
+			roomconf.SpeakNotAllowed[uid] = true
+		} else {
+			roomconf.SpeakNotAllowed[uid] = false
+		}
+		return true
+	}
+	return false
 }

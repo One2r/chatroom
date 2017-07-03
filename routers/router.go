@@ -21,6 +21,7 @@ func init() {
 	//chatroom后台房管接口路由
 	managerNS := beego.NewNamespace("/openapi",
 		beego.NSRouter("/room/silence", &admin.ManagerController{}, "get:SetRoomSilence"),
+		beego.NSRouter("/room/speaknotallowed", &admin.ManagerController{}, "get:SpeakNotAllowed"),
 	)
 	beego.AddNamespace(managerNS)
 }
