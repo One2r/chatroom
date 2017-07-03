@@ -1,8 +1,13 @@
 package controllers
 
-//AjaxErrReturn ajax error返回结构
+//AjaxErrReturn ajax error 返回结构
 type AjaxErrReturn struct {
 	Error bizExcep
+}
+
+//AjaxSuccReturn ajax success 返回结构
+type AjaxSuccReturn struct {
+	Data interface{}
 }
 
 type bizExcep struct {
