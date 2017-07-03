@@ -118,7 +118,7 @@ func isRoomExist(subscribers map[int]*list.List, room int) bool {
 
 //清除空聊天室数据
 func cleanEmptyRoom() {
-	cleanTime := time.NewTicker(60 * 60 * time.Second)
+	cleanTime := time.NewTicker(30 * 60 * time.Second)
 	for {
 		select {
 		case <-cleanTime.C:
