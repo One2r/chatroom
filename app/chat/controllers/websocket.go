@@ -68,12 +68,12 @@ func (this *WebSocketController) Join() {
 		}
 		msg := string(p)
 
-		if roomconf[room].Silence { //全员禁言中
+		if models.Roomconf[room].Silence { //全员禁言中
 			publish <- newEvent(models.EVENT_BIZ_EXCEPTION, clientId, "管理员开启了全员禁言", room)
 			continue
 		}
 
-		if _, ok := roomconf[room].SpeakNotAllowed[user.UserID]; ok { //个人被禁言
+		if _, ok := models.Roomconf[room].SpeakNotAllowed[user.UserID]; ok { //个人被禁言
 			publish <- newEvent(models.EVENT_BIZ_EXCEPTION, clientId, "您被管理员禁言了", room)
 			continue
 		}
@@ -99,7 +99,7 @@ func broadcastWebSocket(event models.Event) {
 		return
 	}
 
-	for sub := subscribers[event.Room].Front(); sub != nil; sub = sub.Next() {
+	for sub := models.Subscribers[event.Room].Front(); sub != nil; sub = sub.Next() {
 		// Immediately send event to WebSocket users.
 		ws := sub.Value.(Subscriber).Conn
 		if ws != nil {

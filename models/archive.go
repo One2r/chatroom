@@ -14,6 +14,18 @@
 
 package models
 
+import (
+	"container/list"
+)
+
+var (
+	//Subscribers 聊天室在线连接
+	Subscribers = make(map[int]*list.List)
+
+	//Roomconf 聊天室相关配置
+	Roomconf = make(map[int]*RoomConf)
+)
+
 type EventType int
 
 const (
