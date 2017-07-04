@@ -5,6 +5,8 @@ import (
 
 	"chatroom/library/filters/replace"
 	"chatroom/library/filters/sensitive"
+
+	"chatroom/library/admin"
 )
 
 // AdminController handles admin requests.
@@ -40,7 +42,9 @@ func (this *AdminController) Signout() {
 	this.Ctx.Redirect(301, "/admin/signin")
 }
 
+//Dashboard ...
 func (this *AdminController) Dashboard() {
+	this.Data["Statis"] = admin.GetStatis()
 	this.Data["isLogin"] = this.GetSession("isLogin").(string)
 	this.TplName = "admin/dashboard.tpl"
 }
