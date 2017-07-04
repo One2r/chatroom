@@ -12,6 +12,11 @@ type AdminController struct {
 	beego.Controller
 }
 
+func (this *AdminController) Prepare() {
+	this.Data["Appname"] = beego.AppConfig.String("appname")
+	this.Data["Appver"] = beego.AppConfig.String("appver")
+}
+
 // Signin 登录
 func (this *AdminController) Signin() {
 	username := this.GetString("username")
@@ -36,6 +41,7 @@ func (this *AdminController) Signout() {
 }
 
 func (this *AdminController) Dashboard() {
+	this.Data["isLogin"] = this.GetSession("isLogin").(string)
 	this.TplName = "admin/dashboard.tpl"
 }
 

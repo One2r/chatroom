@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <title>Bootstrap Admin</title>
+    <title>{{.Appname}} admin</title>
      {{ template "admin/public/meta.tpl" }}
   </head>
 
@@ -12,7 +12,7 @@
   <!--[if (gt IE 9)|!(IE)]><!--> 
   <body class=""> 
   <!--<![endif]-->
-    {{ template "admin/public/header.tpl" }}
+    {{ template "admin/public/header.tpl" .}}
     <div class="row-fluid">
         <div class="dialog">
             <div class="block">
@@ -31,7 +31,7 @@
                     </form>
                 </div>
             </div>
-            <p class="pull-right" style=""><a href="javascript:;" target="blank">Theme by Portnine</a></p>
+            <p class="pull-right">Design by <a href="http://www.portnine.com" target="_blank">Portnine</a></p>
         </div>
     </div>
     <script src="/static/theme/lib/bootstrap/js/bootstrap.js"></script>
