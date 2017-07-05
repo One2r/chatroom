@@ -17,12 +17,12 @@
     
     <div class="content">
         <div class="header">
-            <h1 class="page-title">Dashboard</h1>
+            <h1 class="page-title">服务更新</h1>
         </div>
         
         <ul class="breadcrumb">
             <li><a href="dashboard.html">Home</a> <span class="divider">/</span></li>
-            <li class="active">Dashboard</li>
+            <li class="active">服务更新</li>
         </ul>
 
         <div class="container-fluid">
