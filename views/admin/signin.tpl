@@ -34,6 +34,6 @@
             <p class="pull-right">Design by <a href="http://www.portnine.com" target="_blank">Portnine</a></p>
         </div>
     </div>
-    <script src="/static/theme/lib/bootstrap/js/bootstrap.js"></script>
+    {{ template "admin/public/js.tpl"}}
   </body>
 </html>
