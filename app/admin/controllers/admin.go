@@ -33,7 +33,7 @@ func (this *AdminController) Signin() {
 				this.Abort("500")
 			}
 			this.Ctx.SetCookie("token", token)
-			this.Ctx.Redirect(301, "/admin/dashboard")
+			this.Ctx.Redirect(301, "/admin/dashboard.html")
 		} else {
 			this.Data["showMsg"] = true
 		}
@@ -44,7 +44,7 @@ func (this *AdminController) Signin() {
 //Signout 登出
 func (this *AdminController) Signout() {
 	this.Ctx.SetCookie("token", "")
-	this.Ctx.Redirect(301, "/admin/signin")
+	this.Ctx.Redirect(301, "/admin/signin.html")
 }
 
 //Dashboard ...
