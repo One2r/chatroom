@@ -29,56 +29,20 @@
             <div class="row-fluid">
                 <div class="row-fluid">
                     <div class="block">
-                        <a href="#page-stats" class="block-heading" data-toggle="collapse">最新统计</a>
+                        <a href="#page-stats" class="block-heading" data-toggle="collapse">快捷操作</a>
                         <div id="page-stats" class="block-body collapse in">
                             <div class="stat-widget-container">
-                                <div class="stat-widget" style="width: 33.3%;">
+                                <div class="stat-widget">
                                     <div class="stat-button">
-                                        <p class="title">{{.Statis.roomNum}}</p>
-                                        <p class="detail">总房间数</p>
+                                        <a class="btn btn-primary btn-large sensitive-update-btn">刷新敏感词<i class="icon-refresh"></i></a>
                                     </div>
                                 </div>
-                                <div class="stat-widget" style="width: 33.3%;">
+                                <div class="stat-widget">
                                     <div class="stat-button">
-                                        <p class="title">{{.Statis.online}}</p>
-                                        <p class="detail">当前线人数</p>
-                                    </div>
-                                </div>
-                                 <div class="stat-widget" style="width: 33.3%;">
-                                    <div class="stat-button">
-                                        <p class="title">{{.Statis.MaxOnline}}</p>
-                                        <p class="detail">最高线人数</p>
+                                        <a class="btn btn-primary btn-large replace-update-btn">刷新替换词<i class="icon-refresh"></i></a>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="row-fluid">
-                    <div class="block">
-                        <a href="#tablewidget" class="block-heading" data-toggle="collapse">房间信息</a>
-                        <div id="tablewidget" class="block-body collapse in">
-                            <table class="table">
-                            <thead>
-                                <tr>
-                                <th>房间ID</th>
-                                <th>全员禁言</th>
-                                <th>当前在线人数</th>
-                                <th>最高在线人数</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {{range $index, $elem := .Statis.rooms}}
-                                <tr>
-                                <td>{{$index}}</td>
-                                <td>{{if $elem.Silence}}是{{else}}否{{end}}</td>
-                                <td>{{$elem.online}}</td>
-                                <td>{{$elem.MaxOnline}}</td>
-                                </tr>
-                                {{end}}
-                            </tbody>
-                            </table>
                         </div>
                     </div>
                 </div>
@@ -87,5 +51,63 @@
         </div>
     </div>
     {{ template "admin/public/js.tpl"}}
+    <script src="/static/artDialog-7.0.0/dialog.js"></script>
+    <script>
+        $(".sensitive-update-btn").click(function(){
+            $.ajax({
+                url:"/admin/sensitive/update",
+                type:"GET",
+                success:function(result){ 
+                    if(result.Error === undefined){
+                        if(result.Data == true){
+                            dialog({
+                                title: '提示',
+                                content: '刷新敏感词成功！',
+                                cancelValue: '关闭',
+                                cancel: function () {
+                                    window.location.href=window.location.href;
+                                }
+                            }).width(320).show();
+                            return;
+                        }
+                    }
+                    dialog({
+                        title: '提示',
+                        content: '系统错误，请稍候再试！',
+                        cancelValue: '关闭',
+                        cancel: function () {}
+                    }).width(320).show();
+                }
+            })
+        });
+
+        $(".replace-update-btn").click(function(){
+            $.ajax({
+                url:"/admin/replace/update",
+                type:"GET",
+                success:function(result){ 
+                    if(result.Error === undefined){
+                        if(result.Data == true){
+                            dialog({
+                                title: '提示',
+                                content: '刷新替换词成功！',
+                                cancelValue: '关闭',
+                                cancel: function () {
+                                    window.location.href=window.location.href;
+                                }
+                            }).width(320).show();
+                            return;
+                        }
+                    }
+                    dialog({
+                        title: '提示',
+                        content: '系统错误，请稍候再试！',
+                        cancelValue: '关闭',
+                        cancel: function () {}
+                    }).width(320).show();
+                }
+            })
+        });
+    </script>
   </body>
 </html>
