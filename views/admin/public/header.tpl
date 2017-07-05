@@ -8,8 +8,9 @@
                         <i class="icon-caret-down"></i>
                     </a>
                     <ul class="dropdown-menu">
-                        <li class="divider visible-phone"></li>
                         <li><a tabindex="-1" href="/admin/signout.html">Logout</a></li>
+                        <li class="divider"></li>
+                        <li><a tabindex="-1" target="_blank" href="https://github.com/One2r/chatroom">帮助</a></li>
                     </ul>
                 </li>
             </ul>
