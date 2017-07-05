@@ -29,19 +29,25 @@
             <div class="row-fluid">
                 <div class="row-fluid">
                     <div class="block">
-                        <a href="#page-stats" class="block-heading" data-toggle="collapse">Latest Stats</a>
+                        <a href="#page-stats" class="block-heading" data-toggle="collapse">最新统计</a>
                         <div id="page-stats" class="block-body collapse in">
                             <div class="stat-widget-container">
-                                <div class="stat-widget">
+                                <div class="stat-widget" style="width: 33.3%;">
                                     <div class="stat-button">
                                         <p class="title">{{.Statis.roomNum}}</p>
                                         <p class="detail">总房间数</p>
                                     </div>
                                 </div>
-                                <div class="stat-widget">
+                                <div class="stat-widget" style="width: 33.3%;">
                                     <div class="stat-button">
                                         <p class="title">{{.Statis.online}}</p>
-                                        <p class="detail">总在线人数</p>
+                                        <p class="detail">当前线人数</p>
+                                    </div>
+                                </div>
+                                 <div class="stat-widget" style="width: 33.3%;">
+                                    <div class="stat-button">
+                                        <p class="title">{{.Statis.MaxOnline}}</p>
+                                        <p class="detail">最高线人数</p>
                                     </div>
                                 </div>
                             </div>
@@ -50,49 +56,27 @@
                 </div>
 
                 <div class="row-fluid">
-                    <div class="block span6">
-                        <a href="#tablewidget" class="block-heading" data-toggle="collapse">房间统计<span class="label label-warning">+10</span></a>
+                    <div class="block">
+                        <a href="#tablewidget" class="block-heading" data-toggle="collapse">房间信息</a>
                         <div id="tablewidget" class="block-body collapse in">
                             <table class="table">
                             <thead>
                                 <tr>
                                 <th>房间ID</th>
-                                <th>状态</th>
+                                <th>全员禁言</th>
                                 <th>当前在线人数</th>
                                 <th>最高在线人数</th>
                                 </tr>
                             </thead>
                             <tbody>
+                                {{range $index, $elem := .Statis.rooms}}
                                 <tr>
-                                <td>Mark</td>
-                                <td>Tompson</td>
-                                <td>the_mark7</td>
+                                <td>{{$index}}</td>
+                                <td>{{if $elem.Silence}}是{{else}}否{{end}}</td>
+                                <td>{{$elem.online}}</td>
+                                <td>{{$elem.MaxOnline}}</td>
                                 </tr>
-                                <tr>
-                                <td>Ashley</td>
-                                <td>Jacobs</td>
-                                <td>ash11927</td>
-                                </tr>
-                                <tr>
-                                <td>Audrey</td>
-                                <td>Ann</td>
-                                <td>audann84</td>
-                                </tr>
-                                <tr>
-                                <td>John</td>
-                                <td>Robinson</td>
-                                <td>jr5527</td>
-                                </tr>
-                                <tr>
-                                <td>Aaron</td>
-                                <td>Butler</td>
-                                <td>aaron_butler</td>
-                                </tr>
-                                <tr>
-                                <td>Chris</td>
-                                <td>Albert</td>
-                                <td>cab79</td>
-                                </tr>
+                                {{end}}
                             </tbody>
                             </table>
                         </div>
