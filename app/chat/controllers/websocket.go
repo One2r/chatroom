@@ -34,7 +34,7 @@ type WebSocketController struct {
 
 // Join method handles WebSocket requests for WebSocketController.
 func (this *WebSocketController) Join() {
-	user, err := auth.CheckToken(this.GetString("token"))
+	user, err := auth.CheckWSToken(this.GetString("token"))
 	if err != nil {
 		http.Error(this.Ctx.ResponseWriter, err.Error(), 400)
 		return
