@@ -6,12 +6,22 @@ import (
 
 	admin "chatroom/app/admin/controllers"
 	chat "chatroom/app/chat/controllers"
+
+	"chatroom/library/auth"
 )
 
 var FilterAdminLogin = func(ctx *context.Context) {
-	_, ok := ctx.Input.Session("isLogin").(string)
-	if (ctx.Request.RequestURI != "/admin/signin.html" && ctx.Request.RequestURI != "/admin/signout.html") && !ok {
-		ctx.Redirect(302, "/admin/signin.html")
+	token := ctx.Input.Cookie("token")
+	admin, err := auth.CheckAdminToken(token)
+	if err != nil {
+		if ctx.Request.RequestURI != "/admin/signin.html" && ctx.Request.RequestURI != "/admin/signout.html" {
+			ctx.Redirect(302, "/admin/signin.html")
+		}
+	} else {
+		ctx.Input.SetData("isLogin", admin)
+		if ctx.Request.RequestURI == "/admin/signin.html" {
+			ctx.Redirect(302, "/admin/dashboard.html")
+		}
 	}
 }
 
@@ -26,6 +36,7 @@ func init() {
 
 		beego.NSBefore(FilterAdminLogin),
 		beego.NSRouter("/dashboard", &admin.AdminController{}, "get:Dashboard"),
+		beego.NSRouter("/service", &admin.AdminController{}, "get:Service"),
 		beego.NSRouter("/sensitive/update", &admin.AdminController{}, "get:UpdateSensitiveWords"),
 		beego.NSRouter("/replace/update", &admin.AdminController{}, "get:UpdateReplaceWords"),
 	)

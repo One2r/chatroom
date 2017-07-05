@@ -7,6 +7,7 @@ import (
 	"chatroom/library/filters/sensitive"
 
 	"chatroom/library/admin"
+	"chatroom/library/auth"
 )
 
 // AdminController handles admin requests.
@@ -27,7 +28,11 @@ func (this *AdminController) Signin() {
 
 	if username != "" || password != "" {
 		if username == beego.AppConfig.String("admin_username") && password == beego.AppConfig.String("admin_password") {
-			this.SetSession("isLogin", username)
+			token, err := auth.CreateAdminToken(username)
+			if err != nil {
+				this.Abort("500")
+			}
+			this.Ctx.SetCookie("token", token)
 			this.Ctx.Redirect(301, "/admin/dashboard")
 		} else {
 			this.Data["showMsg"] = true
@@ -38,15 +43,20 @@ func (this *AdminController) Signin() {
 
 //Signout 登出
 func (this *AdminController) Signout() {
-	this.DelSession("isLogin")
+	this.Ctx.SetCookie("token", "")
 	this.Ctx.Redirect(301, "/admin/signin")
 }
 
 //Dashboard ...
 func (this *AdminController) Dashboard() {
 	this.Data["Statis"] = admin.GetStatis()
-	this.Data["isLogin"] = this.GetSession("isLogin").(string)
 	this.TplName = "admin/dashboard.tpl"
+}
+
+//Service ...
+func (this *AdminController) Service() {
+	this.Data["Statis"] = admin.GetStatis()
+	this.TplName = "admin/service.tpl"
 }
 
 //UpdateSensitiveWords 刷新敏感词
