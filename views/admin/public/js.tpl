@@ -1,0 +1,1 @@
+<script src="/static/theme/lib/bootstrap/js/bootstrap.js"></script>
