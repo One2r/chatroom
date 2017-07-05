@@ -62,13 +62,13 @@ func (this *AdminController) Service() {
 //UpdateSensitiveWords 刷新敏感词
 func (this *AdminController) UpdateSensitiveWords() {
 	result := sensitive.UpdateSensitiveWords()
-	this.Data["json"] = result
+	this.Data["json"] = AjaxSuccReturn{Data: result}
 	this.ServeJSON()
 }
 
 //UpdateReplaceWords 刷新替换词
 func (this *AdminController) UpdateReplaceWords() {
 	result := replace.UpdateReplaceWords()
-	this.Data["json"] = result
+	this.Data["json"] = AjaxSuccReturn{Data: result}
 	this.ServeJSON()
 }
