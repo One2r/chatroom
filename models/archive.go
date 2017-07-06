@@ -52,6 +52,7 @@ type RoomConf struct {
 
 //User 用户信息
 type User struct {
-	UserID   int
-	UserType string
+	ID       int    //用户ID
+	Type     string //用户类型
+	Username string //用户昵称
 }

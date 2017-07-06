@@ -10,13 +10,19 @@ import (
 	"chatroom/library/auth"
 )
 
+//CheckAdminLogin 检查后台管理员是否登录
 var CheckAdminLogin = func(ctx *context.Context) {
 	token := ctx.Input.Cookie("token")
-	admin, err := auth.CheckAdminToken(token)
-	if err != nil {
-		if ctx.Request.RequestURI != "/admin/signin.html" && ctx.Request.RequestURI != "/admin/signout.html" {
-			ctx.Redirect(301, "/admin/signin.html")
+	if token == "" {
+		if ctx.Request.RequestURI == "/admin/signin.html" {
+			return
 		}
+		ctx.Redirect(301, "/admin/signin.html")
+	}
+
+	admin, err := auth.CheckToken(token)
+	if err != nil {
+		ctx.Redirect(301, "/admin/signin.html")
 	} else {
 		ctx.Input.SetData("isLogin", admin)
 		if ctx.Request.RequestURI == "/admin/signin.html" {
