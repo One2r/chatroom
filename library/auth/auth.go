@@ -29,6 +29,7 @@ func CheckToken(tokenStr string) (*models.User, error) {
 		errorVar = fmt.Errorf("获取用户数据失败")
 	}
 	user.ID = int(claims["sub"].(map[string]interface{})["ID"].(float64))
+	user.Type = claims["sub"].(map[string]interface{})["Type"].(string)
 	user.Username = claims["sub"].(map[string]interface{})["Username"].(string)
 	return user, errorVar
 }

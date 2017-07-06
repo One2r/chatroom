@@ -35,6 +35,12 @@ const (
 	EVENT_BIZ_EXCEPTION
 )
 
+const (
+	USER_TYPE_ADMIN   = "admin"
+	USER_TYPE_MANAGER = "manager"
+	USER_TYPE_USER    = "user"
+)
+
 type Event struct {
 	Type      EventType // JOIN, LEAVE, MESSAGE
 	ClientId  string
@@ -53,6 +59,6 @@ type RoomConf struct {
 //User 用户信息
 type User struct {
 	ID       int    //用户ID
-	Type     string //用户类型
+	Type     string //用户类型 admin,manager,user
 	Username string //用户昵称
 }
