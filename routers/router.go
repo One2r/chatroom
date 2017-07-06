@@ -8,6 +8,7 @@ import (
 	chat "chatroom/app/chat/controllers"
 
 	"chatroom/library/auth"
+	"chatroom/models"
 )
 
 //CheckAdminLogin 检查后台管理员是否登录
@@ -22,7 +23,7 @@ var CheckAdminLogin = func(ctx *context.Context) {
 	}
 
 	admin, err := auth.CheckToken(token)
-	if err != nil {
+	if err != nil || admin.Type != models.USER_TYPE_ADMIN {
 		ctx.Redirect(301, "/admin/signin.html")
 		return
 	}
@@ -42,8 +43,8 @@ var CheckOpneAPIAuth = func(ctx *context.Context) {
 		ctx.Output.JSON(admin.BizException("缺失token", 600), false, false)
 		return
 	}
-	_, err := auth.CheckToken(token)
-	if err != nil {
+	manager, err := auth.CheckToken(token)
+	if err != nil || manager.Type != models.USER_TYPE_MANAGER {
 		ctx.Output.JSON(admin.BizException("无效token", 600), false, false)
 		return
 	}
