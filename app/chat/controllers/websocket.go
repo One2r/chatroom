@@ -39,7 +39,7 @@ func (this *WebSocketController) Join() {
 		http.Error(this.Ctx.ResponseWriter, "缺失连接token", 400)
 		return
 	}
-	user, err := auth.CheckWSToken(tokenStr)
+	user, err := auth.CheckToken(tokenStr)
 	if err != nil {
 		http.Error(this.Ctx.ResponseWriter, err.Error(), 400)
 		return
@@ -77,7 +77,7 @@ func (this *WebSocketController) Join() {
 			continue
 		}
 
-		if uSpeakNotAllowed, ok := models.Roomconf[room].SpeakNotAllowed[int(user.UserID)]; ok && uSpeakNotAllowed { //个人被禁言
+		if uSpeakNotAllowed, ok := models.Roomconf[room].SpeakNotAllowed[int(user.ID)]; ok && uSpeakNotAllowed { //个人被禁言
 			publish <- newEvent(models.EVENT_BIZ_EXCEPTION, clientId, "您被管理员禁言了", room)
 			continue
 		}

@@ -4,7 +4,7 @@
             <ul class="nav pull-right">
                 <li id="fat-menu" class="dropdown">
                     <a href="#" role="button" class="dropdown-toggle" data-toggle="dropdown">
-                        <i class="icon-user"></i> {{ .isLogin }}
+                        <i class="icon-user"></i> {{ .isLogin.Username }}
                         <i class="icon-caret-down"></i>
                     </a>
                     <ul class="dropdown-menu">
