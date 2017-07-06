@@ -36,9 +36,10 @@ func CheckToken(tokenStr string) (*models.User, error) {
 
 //CreateToken 创建后台管理员token
 func CreateToken(user models.User) (string, error) {
+	ttl, _ := beego.AppConfig.Int64("jwt_ttl")
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"nbf": int64(time.Now().Unix()),
-		"exp": int64(time.Now().Unix() + 60*60*24),
+		"exp": int64(time.Now().Unix() + ttl),
 		"iss": beego.AppConfig.String("appname"),
 		"sub": user,
 	})
