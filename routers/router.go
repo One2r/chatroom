@@ -18,16 +18,34 @@ var CheckAdminLogin = func(ctx *context.Context) {
 			return
 		}
 		ctx.Redirect(301, "/admin/signin.html")
+		return
 	}
 
 	admin, err := auth.CheckToken(token)
 	if err != nil {
 		ctx.Redirect(301, "/admin/signin.html")
-	} else {
-		ctx.Input.SetData("isLogin", admin)
-		if ctx.Request.RequestURI == "/admin/signin.html" {
-			ctx.Redirect(301, "/admin/dashboard.html")
-		}
+		return
+	}
+
+	ctx.Input.SetData("isLogin", admin)
+	if ctx.Request.RequestURI == "/admin/signin.html" {
+		ctx.Redirect(301, "/admin/dashboard.html")
+		return
+	}
+}
+
+//CheckOpneAPIAuth 检查后台openapi权限
+var CheckOpneAPIAuth = func(ctx *context.Context) {
+	var token string
+	ctx.Input.Bind(&token, "token")
+	if token == "" {
+		ctx.Output.JSON(admin.BizException("缺失token", 600), false, false)
+		return
+	}
+	_, err := auth.CheckToken(token)
+	if err != nil {
+		ctx.Output.JSON(admin.BizException("无效token", 600), false, false)
+		return
 	}
 }
 
@@ -50,6 +68,7 @@ func init() {
 
 	//chatroom后台房管接口路由
 	managerNS := beego.NewNamespace("/openapi",
+		beego.NSBefore(CheckOpneAPIAuth),
 		beego.NSRouter("/room/silence", &admin.ManagerController{}, "get:SetRoomSilence"),
 		beego.NSRouter("/room/speaknotallowed", &admin.ManagerController{}, "get:SpeakNotAllowed"),
 	)

@@ -29,7 +29,7 @@ func (this *AdminController) Signin() {
 
 	if username != "" || password != "" {
 		if username == beego.AppConfig.String("admin_username") && password == beego.AppConfig.String("admin_password") {
-			token, err := auth.CreateToken(models.User{ID: 0, Type: "admin", Username: username})
+			token, err := auth.CreateToken(models.User{ID: -1, Type: "admin", Username: username})
 			if err != nil {
 				this.Abort("500")
 			}
