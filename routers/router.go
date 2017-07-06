@@ -10,7 +10,7 @@ import (
 	"chatroom/library/auth"
 )
 
-var FilterAdminLogin = func(ctx *context.Context) {
+var CheckAdminLogin = func(ctx *context.Context) {
 	token := ctx.Input.Cookie("token")
 	admin, err := auth.CheckAdminToken(token)
 	if err != nil {
@@ -34,7 +34,7 @@ func init() {
 		beego.NSRouter("/signin", &admin.AdminController{}, "get,post:Signin"),
 		beego.NSRouter("/signout", &admin.AdminController{}, "get,post:Signout"),
 
-		beego.NSBefore(FilterAdminLogin),
+		beego.NSBefore(CheckAdminLogin),
 		beego.NSRouter("/dashboard", &admin.AdminController{}, "get:Dashboard"),
 		beego.NSRouter("/service", &admin.AdminController{}, "get:Service"),
 		beego.NSRouter("/sensitive/update", &admin.AdminController{}, "get:UpdateSensitiveWords"),
