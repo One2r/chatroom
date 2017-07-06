@@ -62,7 +62,11 @@ func (this *WebSocketController) Join() {
 	clientId := NewClientId(room, ws.RemoteAddr().String())
 	// Join chat room.
 	Join(clientId, ws, room)
-	defer Leave(clientId, room)
+	defer func() {
+		Leave(clientId, room)
+		http.Error(this.Ctx.ResponseWriter, "连接已断开", 400)
+		return
+	}()
 
 	// Message receive loop.
 	for {
