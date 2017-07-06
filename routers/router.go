@@ -15,12 +15,12 @@ var CheckAdminLogin = func(ctx *context.Context) {
 	admin, err := auth.CheckAdminToken(token)
 	if err != nil {
 		if ctx.Request.RequestURI != "/admin/signin.html" && ctx.Request.RequestURI != "/admin/signout.html" {
-			ctx.Redirect(302, "/admin/signin.html")
+			ctx.Redirect(301, "/admin/signin.html")
 		}
 	} else {
 		ctx.Input.SetData("isLogin", admin)
 		if ctx.Request.RequestURI == "/admin/signin.html" {
-			ctx.Redirect(302, "/admin/dashboard.html")
+			ctx.Redirect(301, "/admin/dashboard.html")
 		}
 	}
 }
