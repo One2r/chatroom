@@ -43,3 +43,9 @@ func Subscribe(room int) redis.PubSubConn {
 	psc.Subscribe("chat_room_" + strconv.Itoa(room) + "_channel")
 	return psc
 }
+
+//UnSubscribe 连接断开，取消订阅
+func UnSubscribe(psc redis.PubSubConn) {
+	psc.Unsubscribe()
+	psc.Close()
+}

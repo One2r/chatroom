@@ -16,9 +16,11 @@ package controllers
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/astaxie/beego"
+	"github.com/garyburd/redigo/redis"
 	"github.com/gorilla/websocket"
 
 	"chatroom/library/auth"
@@ -62,13 +64,29 @@ func (this *WebSocketController) Join() {
 	clientId := NewClientId(room, ws.RemoteAddr().String())
 	// Join chat room.
 	Join(clientId, ws, room)
+
+	psc := models.Subscribe(room)
+
 	defer func() {
+		models.UnSubscribe(psc)
 		Leave(clientId, room)
 		http.Error(this.Ctx.ResponseWriter, "连接已断开", 400)
 		return
 	}()
 
-	// Message receive loop.
+	go func() {
+		for {
+			switch n := psc.Receive().(type) {
+			case redis.Message:
+				send(ws, newEvent(models.EVENT_MESSAGE, clientId, string(n.Data), room))
+			case error:
+				fmt.Printf("error: %v\n", n)
+				return
+			}
+		}
+	}()
+
+	// Message receive loop .
 	for {
 		_, p, err := ws.ReadMessage()
 		if err != nil {
@@ -76,22 +94,26 @@ func (this *WebSocketController) Join() {
 		}
 		msg := string(p)
 
-		if models.Roomconf[room].Silence { //全员禁言中
-			publish <- newEvent(models.EVENT_BIZ_EXCEPTION, clientId, "管理员开启了全员禁言", room)
+		//全员禁言中
+		if models.Roomconf[room].Silence {
+			send(ws, newEvent(models.EVENT_BIZ_EXCEPTION, clientId, "管理员开启了全员禁言", room))
 			continue
 		}
 
-		if uSpeakNotAllowed, ok := models.Roomconf[room].SpeakNotAllowed[int(user.ID)]; ok && uSpeakNotAllowed { //个人被禁言
-			publish <- newEvent(models.EVENT_BIZ_EXCEPTION, clientId, "您被管理员禁言了", room)
+		//个人被禁言
+		if uSpeakNotAllowed, ok := models.Roomconf[room].SpeakNotAllowed[int(user.ID)]; ok && uSpeakNotAllowed {
+			send(ws, newEvent(models.EVENT_BIZ_EXCEPTION, clientId, "您被管理员禁言了", room))
 			continue
 		}
 
-		if sensitive.Enable && sensitive.HasSensitiveWords(msg) { //敏感词信息屏蔽
-			publish <- newEvent(models.EVENT_BIZ_EXCEPTION, clientId, "您的发言含有被屏蔽的关键词", room)
+		//敏感词信息屏蔽
+		if sensitive.Enable && sensitive.HasSensitiveWords(msg) {
+			send(ws, newEvent(models.EVENT_BIZ_EXCEPTION, clientId, "您的发言含有被屏蔽的关键词", room))
 			continue
 		}
 
-		if replace.Enable { //内容替换
+		//内容替换
+		if replace.Enable {
 			msg = replace.Replace(msg)
 		}
 
@@ -128,5 +150,18 @@ func broadcastWebSocket(event models.Event) {
 				break
 			}
 		}
+	}
+}
+
+//send 发送消息给websocket客户端
+func send(ws *websocket.Conn, event models.Event) {
+	data, err := json.Marshal(event)
+	if err != nil {
+		beego.Error("Fail to marshal event:", err)
+		return
+	}
+	if ws.WriteMessage(websocket.TextMessage, data) != nil {
+		ws.Close()
+		beego.Error("WebSocket closed:", event.ClientId)
 	}
 }
