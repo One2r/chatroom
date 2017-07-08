@@ -21,15 +21,18 @@ func init() {
 		Dial: func() (redis.Conn, error) {
 			c, err := redis.Dial("tcp", addr)
 			if err != nil {
+				beego.Info(err)
 				return nil, err
 			}
 			if _, err := c.Do("AUTH", beego.AppConfig.String("redis_password")); err != nil {
 				c.Close()
+				beego.Info(err)
 				return nil, err
 			}
 			db, _ := beego.AppConfig.Int("redis_db")
 			if _, err := c.Do("SELECT", db); err != nil {
 				c.Close()
+				beego.Info(err)
 				return nil, err
 			}
 			return c, nil
