@@ -11,22 +11,22 @@ import (
 )
 
 //CheckToken 验证token
-func CheckToken(tokenStr string) (*models.User, error) {
-	var errorVar error
-	user := &models.User{}
-
+func CheckToken(tokenStr string) (user *models.User, errorVar error) {
 	if len(tokenStr) == 0 {
 		errorVar = fmt.Errorf("请输入token")
+		return
 	}
 	token, err := jwt.Parse(tokenStr, func(token *jwt.Token) (interface{}, error) {
 		return []byte(beego.AppConfig.String("jwt_secret")), nil
 	})
 	if err != nil {
 		errorVar = fmt.Errorf("无效token")
+		return
 	}
 	claims, ok := token.Claims.(jwt.MapClaims)
 	if !ok {
 		errorVar = fmt.Errorf("获取用户数据失败")
+		return
 	}
 	user.ID = int(claims["sub"].(map[string]interface{})["ID"].(float64))
 	user.Type = claims["sub"].(map[string]interface{})["Type"].(string)
