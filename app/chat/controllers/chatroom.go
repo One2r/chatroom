@@ -103,7 +103,7 @@ func chatroom() {
 
 func init() {
 	rwmutex = new(sync.RWMutex)
-	go chatroom()
+	//go chatroom()
 	go cleanEmptyRoom()
 }
 

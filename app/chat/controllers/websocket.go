@@ -16,8 +16,8 @@ package controllers
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
+	"strconv"
 
 	"github.com/astaxie/beego"
 	"github.com/garyburd/redigo/redis"
@@ -62,14 +62,14 @@ func (this *WebSocketController) Join() {
 		return
 	}
 	clientId := NewClientId(room, ws.RemoteAddr().String())
-	// Join chat room.
-	Join(clientId, ws, room)
+
+	// send Join chat room msg.
+	send(ws, newEvent(models.EVENT_JOIN, clientId, "", room))
 
 	psc := models.Subscribe(room)
 
 	defer func() {
 		models.UnSubscribe(psc)
-		Leave(clientId, room)
 		http.Error(this.Ctx.ResponseWriter, "连接已断开", 400)
 		return
 	}()
@@ -80,45 +80,47 @@ func (this *WebSocketController) Join() {
 			case redis.Message:
 				send(ws, newEvent(models.EVENT_MESSAGE, clientId, string(n.Data), room))
 			case error:
-				fmt.Printf("error: %v\n", n)
+				beego.Error(n)
 				return
 			}
 		}
 	}()
 
 	// Message receive loop .
-	for {
-		_, p, err := ws.ReadMessage()
-		if err != nil {
-			return
-		}
-		msg := string(p)
+	go func() {
+		for {
+			_, p, err := ws.ReadMessage()
+			if err != nil {
+				return
+			}
+			msg := string(p)
+			beego.Info(user)
+			/**
+			//全员禁言中
+			if models.Roomconf[room].Silence {
+				send(ws, newEvent(models.EVENT_BIZ_EXCEPTION, clientId, "管理员开启了全员禁言", room))
+				continue
+			}
 
-		//全员禁言中
-		if models.Roomconf[room].Silence {
-			send(ws, newEvent(models.EVENT_BIZ_EXCEPTION, clientId, "管理员开启了全员禁言", room))
-			continue
-		}
+			//个人被禁言
+			if uSpeakNotAllowed, ok := models.Roomconf[room].SpeakNotAllowed[int(user.ID)]; ok && uSpeakNotAllowed {
+				send(ws, newEvent(models.EVENT_BIZ_EXCEPTION, clientId, "您被管理员禁言了", room))
+				continue
+			}
+			*/
+			//敏感词信息屏蔽
+			if sensitive.Enable && sensitive.HasSensitiveWords(msg) {
+				send(ws, newEvent(models.EVENT_BIZ_EXCEPTION, clientId, "您的发言含有被屏蔽的关键词", room))
+				continue
+			}
 
-		//个人被禁言
-		if uSpeakNotAllowed, ok := models.Roomconf[room].SpeakNotAllowed[int(user.ID)]; ok && uSpeakNotAllowed {
-			send(ws, newEvent(models.EVENT_BIZ_EXCEPTION, clientId, "您被管理员禁言了", room))
-			continue
+			//内容替换
+			if replace.Enable {
+				msg = replace.Replace(msg)
+			}
+			broadcastWebSocket(newEvent(models.EVENT_MESSAGE, clientId, msg, room))
 		}
-
-		//敏感词信息屏蔽
-		if sensitive.Enable && sensitive.HasSensitiveWords(msg) {
-			send(ws, newEvent(models.EVENT_BIZ_EXCEPTION, clientId, "您的发言含有被屏蔽的关键词", room))
-			continue
-		}
-
-		//内容替换
-		if replace.Enable {
-			msg = replace.Replace(msg)
-		}
-
-		publish <- newEvent(models.EVENT_MESSAGE, clientId, msg, room)
-	}
+	}()
 }
 
 // broadcastWebSocket broadcasts messages to WebSocket users.
@@ -128,29 +130,10 @@ func broadcastWebSocket(event models.Event) {
 		beego.Error("Fail to marshal event:", err)
 		return
 	}
-
-	for sub := models.Subscribers[event.Room].Front(); sub != nil; sub = sub.Next() {
-		// Immediately send event to WebSocket users.
-		ws := sub.Value.(Subscriber).Conn
-		if ws != nil {
-			switch event.Type {
-			case models.EVENT_JOIN, models.EVENT_BIZ_EXCEPTION: //EVENT_JOIN EVENT_BIZ_EXCEPTION事件消息只发送给当前连接
-				if event.ClientId == sub.Value.(Subscriber).ClientId {
-					if ws.WriteMessage(websocket.TextMessage, data) != nil {
-						// User disconnected.
-						unsubscribe <- UnSubscriber{ClientId: sub.Value.(Subscriber).ClientId, Room: sub.Value.(Subscriber).Room}
-					}
-				}
-				break
-			default:
-				if ws.WriteMessage(websocket.TextMessage, data) != nil {
-					// User disconnected.
-					unsubscribe <- UnSubscriber{ClientId: sub.Value.(Subscriber).ClientId, Room: sub.Value.(Subscriber).Room}
-				}
-				break
-			}
-		}
-	}
+	redisConn := models.RedisConnPool.Get()
+	redisConn.Send("PUBLISH", data, "chat_room_"+strconv.Itoa(event.Room)+"_channel")
+	redisConn.Flush()
+	redisConn.Close()
 }
 
 //send 发送消息给websocket客户端
