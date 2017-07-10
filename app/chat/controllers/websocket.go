@@ -18,6 +18,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"strconv"
+	"sync"
 
 	"github.com/astaxie/beego"
 	"github.com/garyburd/redigo/redis"
@@ -66,8 +67,10 @@ func (this *WebSocketController) Join() {
 	// send Join chat room msg.
 	send(ws, newEvent(models.EVENT_JOIN, clientId, "", room))
 
-	psc := models.Subscribe(room)
+	var wg sync.WaitGroup
+	wg.Add(2)
 
+	psc := models.Subscribe(room)
 	defer func() {
 		models.UnSubscribe(psc)
 		http.Error(this.Ctx.ResponseWriter, "连接已断开", 400)
@@ -75,19 +78,21 @@ func (this *WebSocketController) Join() {
 	}()
 
 	go func() {
+		defer wg.Done()
 		for {
 			switch n := psc.Receive().(type) {
 			case redis.Message:
 				send(ws, newEvent(models.EVENT_MESSAGE, clientId, string(n.Data), room))
 			case error:
 				beego.Error(n)
-				return
+				continue
 			}
 		}
 	}()
 
 	// Message receive loop .
 	go func() {
+		defer wg.Done()
 		for {
 			_, p, err := ws.ReadMessage()
 			if err != nil {
@@ -118,20 +123,16 @@ func (this *WebSocketController) Join() {
 			if replace.Enable {
 				msg = replace.Replace(msg)
 			}
-			broadcastWebSocket(newEvent(models.EVENT_MESSAGE, clientId, msg, room))
+			broadcastWebSocket(room, msg)
 		}
 	}()
+	wg.Wait()
 }
 
 // broadcastWebSocket broadcasts messages to WebSocket users.
-func broadcastWebSocket(event models.Event) {
-	data, err := json.Marshal(event)
-	if err != nil {
-		beego.Error("Fail to marshal event:", err)
-		return
-	}
+func broadcastWebSocket(room int, data string) {
 	redisConn := models.RedisConnPool.Get()
-	redisConn.Send("PUBLISH", data, "chat_room_"+strconv.Itoa(event.Room)+"_channel")
+	redisConn.Send("PUBLISH", "chat_room_"+strconv.Itoa(room)+"_channel", data)
 	redisConn.Flush()
 	redisConn.Close()
 }

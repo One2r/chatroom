@@ -21,9 +21,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/astaxie/beego"
-	"github.com/gorilla/websocket"
-
 	"chatroom/models"
 )
 
@@ -31,79 +28,14 @@ func newEvent(ep models.EventType, user, msg string, room int) models.Event {
 	return models.Event{ep, user, int(time.Now().Unix()), msg, room}
 }
 
-func Join(clientId string, ws *websocket.Conn, room int) {
-	subscribe <- Subscriber{ClientId: clientId, Conn: ws, Room: room}
-}
-
-func Leave(clientId string, room int) {
-	unsubscribe <- UnSubscriber{ClientId: clientId, Room: room}
-}
-
 func NewClientId(room int, RemoteAddr string) string {
 	return "h_l_" + strconv.Itoa(room) + "_" + hex.EncodeToString([]byte(RemoteAddr))
 }
 
-type Subscriber struct {
-	ClientId string
-	Conn     *websocket.Conn // Only for WebSocket users; otherwise nil.
-	Room     int
-}
-
-type UnSubscriber struct {
-	ClientId string
-	Room     int
-}
-
-var (
-	// Channel for new join users.
-	subscribe = make(chan Subscriber, 50)
-	// Channel for exit users.
-	unsubscribe = make(chan UnSubscriber, 50)
-	// Send events here to publish them.
-	publish = make(chan models.Event, 100)
-)
-
 var rwmutex *sync.RWMutex
-
-// This function handles all incoming chan messages.
-func chatroom() {
-	for {
-		select {
-		case sub := <-subscribe:
-			if isRoomExist(models.Subscribers, sub.Room) {
-				models.Subscribers[sub.Room].PushBack(sub) // Add user to the end of list.
-				// Publish a JOIN event.
-				publish <- newEvent(models.EVENT_JOIN, sub.ClientId, "", sub.Room)
-
-				setRoomMaxOnline(sub.Room)
-				beego.Info("New user:", sub.ClientId, ";WebSocket:", sub.Conn != nil)
-			}
-		case event := <-publish:
-			broadcastWebSocket(event)
-
-			if event.Type == models.EVENT_MESSAGE {
-				beego.Info("Message from", event.ClientId, ";Content:", event.Content)
-			}
-		case unsub := <-unsubscribe:
-			for sub := models.Subscribers[unsub.Room].Front(); sub != nil; sub = sub.Next() {
-				if sub.Value.(Subscriber).ClientId == unsub.ClientId {
-					models.Subscribers[unsub.Room].Remove(sub)
-					// Clone connection.
-					ws := sub.Value.(Subscriber).Conn
-					if ws != nil {
-						ws.Close()
-						beego.Error("WebSocket closed:", unsub.ClientId)
-					}
-					break
-				}
-			}
-		}
-	}
-}
 
 func init() {
 	rwmutex = new(sync.RWMutex)
-	//go chatroom()
 	go cleanEmptyRoom()
 }
 
