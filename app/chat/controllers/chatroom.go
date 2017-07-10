@@ -15,7 +15,6 @@
 package controllers
 
 import (
-	"container/list"
 	"encoding/hex"
 	"strconv"
 	"time"
@@ -33,15 +32,6 @@ func NewClientId(room int, RemoteAddr string) string {
 
 func init() {
 	go cleanEmptyRoom()
-}
-
-//检查房间是否存在
-func isRoomExist(subscribers map[int]*list.List, room int) bool {
-	if subscribers[room] == nil {
-		subscribers[room] = list.New()
-		models.Roomconf[room] = &models.RoomConf{MaxOnline: 0, Silence: false, SpeakNotAllowed: make(map[int]bool)}
-	}
-	return true
 }
 
 //清除空聊天室数据
