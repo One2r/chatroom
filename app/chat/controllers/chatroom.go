@@ -18,7 +18,6 @@ import (
 	"container/list"
 	"encoding/hex"
 	"strconv"
-	"sync"
 	"time"
 
 	"chatroom/models"
@@ -32,10 +31,7 @@ func NewClientId(room int, RemoteAddr string) string {
 	return "h_l_" + strconv.Itoa(room) + "_" + hex.EncodeToString([]byte(RemoteAddr))
 }
 
-var rwmutex *sync.RWMutex
-
 func init() {
-	rwmutex = new(sync.RWMutex)
 	go cleanEmptyRoom()
 }
 
@@ -62,14 +58,4 @@ func cleanEmptyRoom() {
 			}
 		}
 	}
-}
-
-//更新聊天室最大在线人数
-func setRoomMaxOnline(room int) {
-	rwmutex.Lock()
-	roomNum := models.Subscribers[room].Len()
-	if roomNum > models.Roomconf[room].MaxOnline {
-		models.Roomconf[room].MaxOnline = roomNum
-	}
-	rwmutex.Unlock()
 }
