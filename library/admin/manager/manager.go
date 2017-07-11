@@ -19,7 +19,12 @@ func SetRoomSilence(room int, status string) bool {
 //SpeakNotAllowed 禁言某个房间的某个人
 func SpeakNotAllowed(room int, uid int, status string) bool {
 	redisConn := models.RedisConnPool.Get()
-	_, err := redisConn.Do("SET", "RoomConfig:"+strconv.Itoa(room)+":SpeakNotAllowed:"+strconv.Itoa(uid), status)
+	var err error
+	if status == "true" {
+		_, err = redisConn.Do("SET", "RoomConfig:"+strconv.Itoa(room)+":SpeakNotAllowed:"+strconv.Itoa(uid), status)
+	} else {
+		_, err = redisConn.Do("DEL", "RoomConfig:"+strconv.Itoa(room)+":SpeakNotAllowed:"+strconv.Itoa(uid), status)
+	}
 	redisConn.Close()
 	if err != nil {
 		return false
