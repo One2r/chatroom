@@ -2,10 +2,16 @@ package admin
 
 import (
 	"chatroom/models"
+
+	"github.com/astaxie/beego"
+	"github.com/garyburd/redigo/redis"
 )
 
 //GetStatis 获取聊天室相关统计信息
 func GetStatis() map[string]interface{} {
+	redisConn := models.RedisConnPool.Get()
+	v, _ := redis.StringMap(redisConn.Do("PUBSUB", "CHANNELS", "chat_room_*"))
+	beego.Info(v)
 	statis := make(map[string]interface{})
 	statis["online"] = 0
 	statis["MaxOnline"] = 0

@@ -27,9 +27,9 @@ func (this *ManagerController) SetRoomSilence() {
 		this.StopRun()
 	}
 	if manager.SetRoomSilence(room, status) {
-		this.Data["json"] = AjaxSuccReturn{Data: models.Roomconf[room].Silence}
+		this.Data["json"] = AjaxSuccReturn{Data: status}
 	} else {
-		this.Data["json"] = BizException("设置失败，该房间没有在线人数", 600)
+		this.Data["json"] = BizException("设置失败", 600)
 	}
 	this.ServeJSON()
 	this.StopRun()
