@@ -4,7 +4,6 @@ import (
 	"github.com/astaxie/beego"
 
 	"chatroom/library/admin/manager"
-	"chatroom/models"
 )
 
 // ManagerController handles manager requests.
@@ -29,7 +28,7 @@ func (this *ManagerController) SetRoomSilence() {
 	if manager.SetRoomSilence(room, status) {
 		this.Data["json"] = AjaxSuccReturn{Data: status}
 	} else {
-		this.Data["json"] = BizException("设置失败", 600)
+		this.Data["json"] = BizException("设置失败", 500)
 	}
 	this.ServeJSON()
 	this.StopRun()
@@ -59,9 +58,9 @@ func (this *ManagerController) SpeakNotAllowed() {
 	}
 
 	if manager.SpeakNotAllowed(room, uid, status) {
-		this.Data["json"] = AjaxSuccReturn{Data: models.Roomconf[room].SpeakNotAllowed[uid]}
+		this.Data["json"] = AjaxSuccReturn{Data: status}
 	} else {
-		this.Data["json"] = BizException("设置失败，该房间没有在线人数", 600)
+		this.Data["json"] = BizException("设置失败", 500)
 	}
 	this.ServeJSON()
 	this.StopRun()
