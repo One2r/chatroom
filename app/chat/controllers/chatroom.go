@@ -17,7 +17,10 @@ package controllers
 import (
 	"encoding/hex"
 	"strconv"
+	"strings"
 	"time"
+
+	"github.com/garyburd/redigo/redis"
 
 	"chatroom/models"
 )
@@ -36,14 +39,28 @@ func init() {
 
 //清除空聊天室数据
 func cleanEmptyRoom() {
-	cleanTime := time.NewTicker(30 * 60 * time.Second)
+	cleanTime := time.NewTicker(1 * 60 * time.Second)
+	redisConn := models.RedisConnPool.Get()
 	for {
 		select {
 		case <-cleanTime.C:
-			for k, v := range models.Subscribers {
-				if v.Len() == 0 {
-					delete(models.Subscribers, k)
-					delete(models.Roomconf, k)
+			chatRoom, _ := redis.Strings(redisConn.Do("KEYS", "RoomConfig*CreatedAt"))
+			for _, room := range chatRoom {
+				roomArr := strings.Split(room, ":")
+				roomChannel := "chat_room_" + roomArr[1] + "_channel"
+				Online, _ := redis.IntMap(redisConn.Do("PUBSUB", "NUMSUB", roomChannel))
+				if Online[roomChannel] == 0 {
+					EmptiedAt, _ := redis.Int(redisConn.Do("GET", "RoomConfig:"+roomArr[1]+":EmptiedAt"))
+					if int(time.Now().Unix())-EmptiedAt > 60*30 {
+						roomConfig, _ := redis.Strings(redisConn.Do("KEYS", "RoomConfig:"+roomArr[1]+":*"))
+						for _, v := range roomConfig {
+							redisConn.Do("DEL", v)
+						}
+					} else {
+						redisConn.Do("SETNX", "RoomConfig:"+roomArr[1]+":EmptiedAt", int(time.Now().Unix()))
+					}
+				} else {
+					redisConn.Do("DEL", "RoomConfig:"+roomArr[1]+":EmptiedAt")
 				}
 			}
 		}
