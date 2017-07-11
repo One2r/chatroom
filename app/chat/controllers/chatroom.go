@@ -51,7 +51,7 @@ func cleanEmptyRoom() {
 				Online, _ := redis.IntMap(redisConn.Do("PUBSUB", "NUMSUB", roomChannel))
 				if Online[roomChannel] == 0 {
 					EmptiedAt, _ := redis.Int(redisConn.Do("GET", "RoomConfig:"+roomArr[1]+":EmptiedAt"))
-					if int(time.Now().Unix())-EmptiedAt > 60*30 {
+					if EmptiedAt > 0 && int(time.Now().Unix())-EmptiedAt > 60*30 {
 						roomConfig, _ := redis.Strings(redisConn.Do("KEYS", "RoomConfig:"+roomArr[1]+":*"))
 						for _, v := range roomConfig {
 							redisConn.Do("DEL", v)
