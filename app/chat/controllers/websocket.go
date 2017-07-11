@@ -105,7 +105,6 @@ func (this *WebSocketController) Join() {
 			return
 		}
 		msg := string(p)
-		beego.Info(user)
 
 		//全员禁言中
 		Silence, _ := redis.Bool(redisConn.Do("GET", "RoomConfig:"+strconv.Itoa(room)+":Silence"))
@@ -115,13 +114,14 @@ func (this *WebSocketController) Join() {
 			}
 			continue
 		}
-		/**
+
 		//个人被禁言
-		if uSpeakNotAllowed, ok := models.Roomconf[room].SpeakNotAllowed[int(user.ID)]; ok && uSpeakNotAllowed {
+		uSpeakNotAllowed, _ := redis.Bool(redisConn.Do("GET", "RoomConfig:"+strconv.Itoa(room)+":SpeakNotAllowed:"+strconv.Itoa(user.ID)))
+		if uSpeakNotAllowed {
 			send(ws, newEvent(models.EVENT_BIZ_EXCEPTION, clientId, "您被管理员禁言了", room))
 			continue
 		}
-		*/
+
 		//敏感词信息屏蔽
 		if sensitive.Enable && sensitive.HasSensitiveWords(msg) {
 			if send(ws, newEvent(models.EVENT_BIZ_EXCEPTION, clientId, "您的发言含有被屏蔽的关键词", room)) != nil {
