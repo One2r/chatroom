@@ -14,18 +14,6 @@
 
 package models
 
-import (
-	"container/list"
-)
-
-var (
-	//Subscribers 聊天室在线连接
-	Subscribers = make(map[int]*list.List)
-
-	//Roomconf 聊天室相关配置
-	Roomconf = make(map[int]*RoomConf)
-)
-
 type EventType int
 
 const (
@@ -47,13 +35,6 @@ type Event struct {
 	Timestamp int // Unix timestamp (secs)
 	Content   string
 	Room      int
-}
-
-//RoomConf 聊天室配置
-type RoomConf struct {
-	MaxOnline       int          //最大在线人数
-	Silence         bool         //(除管理员)全员禁言
-	SpeakNotAllowed map[int]bool //被禁言人员
 }
 
 //User 用户信息
