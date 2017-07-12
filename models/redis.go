@@ -44,7 +44,6 @@ func init() {
 func Subscribe(room int) redis.PubSubConn {
 	psc := redis.PubSubConn{Conn: RedisConnPool.Get()}
 	psc.Subscribe("chat_room_" + strconv.Itoa(room) + "_channel")
-	SetRoomMaxOnline(room)
 	return psc
 }
 
@@ -55,22 +54,19 @@ func UnSubscribe(psc redis.PubSubConn) {
 }
 
 // IsRoomConfigInit 检查房间配置是否初始化，否则初始化
-func IsRoomConfigInit(room int) {
-	redisConn := RedisConnPool.Get()
+func IsRoomConfigInit(room int, redisConn redis.Conn) {
 	CreatedAt, err := redis.Int64(redisConn.Do("EXISTS", "RoomConfig:"+strconv.Itoa(room)+":CreatedAt"))
 	if err != nil || CreatedAt == 0 {
 		redisConn.Do("SET", "RoomConfig:"+strconv.Itoa(room)+":CreatedAt", int(time.Now().Unix()))
 		redisConn.Do("SET", "RoomConfig:"+strconv.Itoa(room)+":MaxOnline", 0)
 		redisConn.Do("SET", "RoomConfig:"+strconv.Itoa(room)+":Silence", "false")
 	}
-	redisConn.Close()
 }
 
 //SetRoomMaxOnline 更新聊天室最大在线人数
-func SetRoomMaxOnline(room int) {
+func SetRoomMaxOnline(room int, redisConn redis.Conn) {
 	roomChannel := "chat_room_" + strconv.Itoa(room) + "_channel"
 	roomConfNS := "RoomConfig:" + strconv.Itoa(room) + ":"
-	redisConn := RedisConnPool.Get()
 
 	numsub, _ := redis.IntMap(redisConn.Do("PUBSUB", "NUMSUB", roomChannel))
 	redisConn.Do("WATCH", roomConfNS+"MaxOnline")
@@ -82,5 +78,4 @@ func SetRoomMaxOnline(room int) {
 	} else {
 		redisConn.Do("UNWATCH")
 	}
-	redisConn.Close()
 }

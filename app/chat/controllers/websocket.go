@@ -64,15 +64,21 @@ func (this *WebSocketController) Join() {
 	}
 	clientId := NewClientId(room, ws.RemoteAddr().String())
 
+	//join room by subscribes redis channels
+	psc := models.Subscribe(room)
+
+	redisConn := models.RedisConnPool.Get()
+	//init room config
+	models.IsRoomConfigInit(room, redisConn)
+
 	// send Join chat room msg.
-	models.IsRoomConfigInit(room)
 	if send(ws, newEvent(models.EVENT_JOIN, clientId, "", room)) != nil {
 		http.Error(this.Ctx.ResponseWriter, "连接已断开", 400)
 		return
 	}
 
-	psc := models.Subscribe(room)
-	redisConn := models.RedisConnPool.Get()
+	// update room max online number
+	models.SetRoomMaxOnline(room, redisConn)
 
 	defer func() {
 		redisConn.Close()
