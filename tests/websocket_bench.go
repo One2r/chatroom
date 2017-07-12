@@ -39,22 +39,29 @@ func main() {
 			return
 		}
 		for i := 0; i < c.Int("c"); i++ {
-			time.Sleep(10 * time.Millisecond)
+			time.Sleep(30 * time.Millisecond)
 			wg.Add(1)
 			go func(i int) {
-				defer wg.Done()
 				dialer := websocket.Dialer{ /* set fields as needed */ }
 				ws, _, err := dialer.Dial(c.String("ws"), nil)
+
+				defer func() {
+					ws.Close()
+					wg.Done()
+				}()
+
 				if err != nil {
-					// handle error
+					return
 				}
 				if err := ws.WriteMessage(websocket.TextMessage, []byte("I am No.:"+strconv.Itoa(i))); err != nil {
-					// handle error
+					fmt.Println(err)
+					return
 				}
 				for {
 					_, p, err := ws.ReadMessage()
 					if err != nil {
-						// handle error
+						fmt.Println(err)
+						return
 					}
 					fmt.Println("No.:"+strconv.Itoa(i)+" get message :", string(p))
 				}
